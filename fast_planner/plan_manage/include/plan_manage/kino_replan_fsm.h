@@ -37,6 +37,7 @@
 
 #include <bspline_opt/bspline_optimizer.h>
 #include <path_searching/kinodynamic_astar.h>
+#include <path_searching/grid_map.h>
 #include <plan_env/edt_environment.h>
 #include <plan_env/obj_predictor.h>
 #include <plan_env/sdf_map.h>
@@ -89,6 +90,7 @@ private:
   /* planning data */
   bool trigger_, have_target_, have_odom_;
   FSM_EXEC_STATE exec_state_;
+  GridMap global_map;
 
   Eigen::Vector3d odom_pos_, odom_vel_;  // odometry state
   Eigen::Quaterniond odom_orient_;
@@ -100,7 +102,7 @@ private:
   /* ROS utils */
   ros::NodeHandle node_;
   ros::Timer exec_timer_, safety_timer_, vis_timer_, test_something_timer_;
-  ros::Subscriber waypoint_sub_, odom_sub_;
+  ros::Subscriber waypoint_sub_, odom_sub_, global_map_sub_;
   ros::Publisher replan_pub_, new_pub_, bspline_pub_;
 
   /* helper functions */
@@ -115,6 +117,7 @@ private:
   void checkCollisionCallback(const ros::TimerEvent& e);
   void waypointCallback(const nav_msgs::PathConstPtr& msg);
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
+  void MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg);
 
 public:
   KinoReplanFSM(/* args */) {

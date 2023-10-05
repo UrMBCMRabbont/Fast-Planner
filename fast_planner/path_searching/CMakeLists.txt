@@ -36,6 +36,7 @@ add_library( path_searching
     src/kinodynamic_astar.cpp 
     src/astar.cpp
     src/topo_prm.cpp
+    src/grid_map.cpp
     )
 target_link_libraries( path_searching
     ${catkin_LIBRARIES} 

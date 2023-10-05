@@ -58,6 +58,7 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   waypoint_sub_ =
       nh.subscribe("/waypoint_generator/waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("/odom_world", 1, &KinoReplanFSM::odometryCallback, this);
+  global_map_sub_ = nh.subscribe("/map", 1, &KinoReplanFSM::MapCallback, this);
 
   replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 10);
   new_pub_     = nh.advertise<std_msgs::Empty>("/planning/new", 10);
@@ -106,7 +107,27 @@ void KinoReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr& msg) {
 
   have_odom_ = true;
 }
-
+void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
+	global_map.origin_x = msg->info.origin.position.x;	 // 获得栅格地图的原点x值(相对世界坐标系),单位为m
+	global_map.origin_y = msg->info.origin.position.y;	 // 获得栅格地图的原点y值(相对世界坐标系),单位为m
+	global_map.resolution = msg->info.resolution;		 // 获得栅格地图的分辨率
+	global_map.width = msg->info.width;				 // 获得栅格地图的宽
+	global_map.height = msg->info.height;				 // 获得栅格地图的高
+	std::cout << "***********map message**********" << std::endl;
+	std::cout << "origin_x:" << global_map.origin_x << std::endl;
+	std::cout << "origin_y:" << global_map.origin_y << std::endl;
+	std::cout << "resolution:" << global_map.resolution << std::endl;
+	std::cout << "width:" << global_map.width << std::endl;
+	std::cout << "height:" << global_map.height << std::endl;
+	std::cout << "*********************************" << std::endl;
+	global_map.mapData.resize(global_map.width * global_map.height);
+	// 获得地图数据 0自由通行区域，100障碍物
+	for (int i = 0; i <global_map.height; i++) {
+		for (int j = 0; j < global_map.width; j++) {
+			global_map.mapData[i * global_map.width + j] = int(msg->data[i * global_map.width + j]);
+		}
+	}
+}
 void KinoReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call) {
   string state_str[5] = { "INIT", "WAIT_TARGET", "GEN_NEW_TRAJ", "REPLAN_TRAJ", "EXEC_TRAJ" };
   int    pre_s        = int(exec_state_);
