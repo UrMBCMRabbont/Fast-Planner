@@ -217,7 +217,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
           double dt = tau * double(k) / double(check_num_);
           stateTransit(cur_state, xt, um, dt);
           pos = xt.head(3);
-          if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 || global_map.getInflateOccupancy(pos) == 1)
+          if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 || global_map.getInflateOccupancy(pos, edt_environment_->sdf_map_->getOrigin()) == 1)
           {
             is_occ = true;
             break;
@@ -452,7 +452,7 @@ bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd s
     // if (edt_environment_->evaluateCoarseEDT(coord, -1.0) <= margin_) {
     //   return false;
     // }
-    if (edt_environment_->sdf_map_->getInflateOccupancy(coord) == 1 || global_map.getInflateOccupancy(coord) == 1)
+    if (edt_environment_->sdf_map_->getInflateOccupancy(coord) == 1 || global_map.getInflateOccupancy(coord,edt_environment_->sdf_map_->getOrigin()) == 1)
     {
       return false;
     }
