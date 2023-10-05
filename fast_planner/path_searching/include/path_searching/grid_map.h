@@ -18,7 +18,8 @@
 #include <path_searching/grid_map.h>
 class GridMap{
 public:
-    int origin_x, origin_y, resolution, width, height;
+    int origin_x, origin_y, width, height;
+    float resolution;
     std::vector<int> mapData;
     int getInflateOccupancy(Eigen::Vector3d pos,Eigen::Vector3d offset_);
 private:
