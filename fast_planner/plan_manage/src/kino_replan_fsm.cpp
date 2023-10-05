@@ -336,7 +336,7 @@ bool KinoReplanFSM::callKinodynamicReplan() {
       // set z=0.0 plane
 
   bool plan_success =
-      planner_manager_->kinodynamicReplan(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_);
+      planner_manager_->kinodynamicReplan(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_, global_map);
 
   if (plan_success) {
 

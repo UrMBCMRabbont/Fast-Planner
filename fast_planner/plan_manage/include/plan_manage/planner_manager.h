@@ -31,6 +31,7 @@
 
 #include <path_searching/astar.h>
 #include <path_searching/kinodynamic_astar.h>
+#include <path_searching/grid_map.h>
 #include <path_searching/topo_prm.h>
 
 #include <plan_env/edt_environment.h>
@@ -52,7 +53,7 @@ public:
 
   /* main planning interface */
   bool kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
-                         Eigen::Vector3d end_pt, Eigen::Vector3d end_vel);
+                         Eigen::Vector3d end_pt, Eigen::Vector3d end_vel, GridMap global_map);
   bool planGlobalTraj(const Eigen::Vector3d& start_pos);
   bool topoReplan(bool collide);
 

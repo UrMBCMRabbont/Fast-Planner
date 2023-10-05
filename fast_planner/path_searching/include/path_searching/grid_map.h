@@ -1,4 +1,4 @@
-
+#pragma once
 #include <ros/ros.h>
 #include <vector>
 #include <nav_msgs/OccupancyGrid.h>

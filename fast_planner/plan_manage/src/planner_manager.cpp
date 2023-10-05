@@ -126,7 +126,7 @@ bool FastPlannerManager::checkTrajCollision(double& distance) {
 
 bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,
                                            Eigen::Vector3d start_acc, Eigen::Vector3d end_pt,
-                                           Eigen::Vector3d end_vel) {
+                                           Eigen::Vector3d end_vel, GridMap global_map) {
 
   std::cout << "[kino replan]: -----------------------" << std::endl;
   cout << "start: " << start_pt.transpose() << ", " << start_vel.transpose() << ", "
