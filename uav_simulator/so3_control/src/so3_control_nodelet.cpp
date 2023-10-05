@@ -60,6 +60,10 @@ private:
 void
 SO3ControlNodelet::publishSO3Command(void)
 {
+  // std::cout << "lai des pos x: " << des_pos_[0] << std::endl;
+  // std::cout << "lai des pos y: " << des_pos_[1] << std::endl;
+  // std::cout << "lai des pos z: " << des_pos_[2] << std::endl;
+
   controller_.calculateControl(des_pos_, des_vel_, des_acc_, des_yaw_,
                                des_yaw_dot_, kx_, kv_);
 
