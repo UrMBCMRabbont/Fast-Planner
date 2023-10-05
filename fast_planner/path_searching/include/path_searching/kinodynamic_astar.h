@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <utility>
 #include "plan_env/edt_environment.h"
+#include <path_searching/grid_map.h>
 
 namespace fast_planner {
 // #define REACH_HORIZON 1
@@ -144,7 +145,7 @@ class KinodynamicAstar {
   vector<double> cubic(double a, double b, double c, double d);
   vector<double> quartic(double a, double b, double c, double d, double e);
   bool computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd state2,
-                       double time_to_goal);
+                       double time_to_goal, GridMap global_map);
   double estimateHeuristic(Eigen::VectorXd x1, Eigen::VectorXd x2,
                            double& optimal_time);
 
@@ -165,7 +166,7 @@ class KinodynamicAstar {
   void reset();
   int search(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,
              Eigen::Vector3d start_acc, Eigen::Vector3d end_pt,
-             Eigen::Vector3d end_vel, bool init, bool dynamic = false,
+             Eigen::Vector3d end_vel, GridMap global_map, bool init, bool dynamic = false,
              double time_start = -1.0);
 
   void setEnvironment(const EDTEnvironment::Ptr& env);

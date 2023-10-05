@@ -39,7 +39,7 @@ KinodynamicAstar::~KinodynamicAstar()
 }
 
 int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
-                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
+                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, GridMap global_map, bool init, bool dynamic, double time_start)
 {
   start_vel_ = start_v;
   start_acc_ = start_a;
@@ -97,7 +97,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
       {
         // Check whether shot traj exist
         estimateHeuristic(cur_node->state, end_state, time_to_goal);
-        computeShotTraj(cur_node->state, end_state, time_to_goal);
+        computeShotTraj(cur_node->state, end_state, time_to_goal, global_map);
         if (init_search)
           ROS_ERROR("Shot in first search loop!");
       }
@@ -217,7 +217,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
           double dt = tau * double(k) / double(check_num_);
           stateTransit(cur_state, xt, um, dt);
           pos = xt.head(3);
-          if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 )
+          if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 || global_map.getInflateOccupancy(pos) == 1)
           {
             is_occ = true;
             break;
@@ -393,7 +393,7 @@ double KinodynamicAstar::estimateHeuristic(Eigen::VectorXd x1, Eigen::VectorXd x
   return 1.0 * (1 + tie_breaker_) * cost;
 }
 
-bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd state2, double time_to_goal)
+bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd state2, double time_to_goal, GridMap global_map)
 {
   /* ---------- get coefficient ---------- */
   const Vector3d p0 = state1.head(3);
@@ -452,7 +452,7 @@ bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd s
     // if (edt_environment_->evaluateCoarseEDT(coord, -1.0) <= margin_) {
     //   return false;
     // }
-    if (edt_environment_->sdf_map_->getInflateOccupancy(coord) == 1)
+    if (edt_environment_->sdf_map_->getInflateOccupancy(coord) == 1 || global_map.getInflateOccupancy(coord) == 1)
     {
       return false;
     }
