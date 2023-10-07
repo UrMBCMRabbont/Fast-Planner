@@ -79,10 +79,13 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
   bool init_search = init;
   const int tolerance = ceil(1 / resolution_);
 
+  /* ---------- search loop ---------- */
   while (!open_set_.empty())
   {
+    /* ---------- get lowest f_score node ---------- */
     cur_node = open_set_.top();
 
+    /* ---------- determine termination ---------- */
     // Terminate?
     bool reach_horizon = (cur_node->state.head(3) - start_pt).norm() >= horizon_;
     bool near_end = abs(cur_node->index(0) - end_index(0)) <= tolerance &&
@@ -134,10 +137,11 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
         return NO_PATH;
       }
     }
+     /* ---------- pop node and add to close set ---------- */
     open_set_.pop();
     cur_node->node_state = IN_CLOSE_SET;
     iter_num_ += 1;
-
+     /* ---------- init neighbor expansion ---------- */
     double res = 1 / 2.0, time_res = 1 / 1.0, time_res_init = 1 / 20.0;
     Eigen::Matrix<double, 6, 1> cur_state = cur_node->state;
     Eigen::Matrix<double, 6, 1> pro_state;

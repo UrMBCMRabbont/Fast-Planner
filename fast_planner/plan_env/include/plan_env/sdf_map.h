@@ -435,8 +435,8 @@ inline int SDFMap::getInflateOccupancy(Eigen::Vector3d pos) {
 
   Eigen::Vector3i id;
   posToIndex(pos, id);
-
-  return int(md_.occupancy_buffer_inflate_[toAddress(id)]);
+  return 0;
+  // return int(md_.ossccupancy_buffer_inflate_[toAddress(id)]);
 }
 
 inline int SDFMap::getOccupancy(Eigen::Vector3i id) {
