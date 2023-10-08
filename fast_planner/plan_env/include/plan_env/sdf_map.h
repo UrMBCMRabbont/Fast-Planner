@@ -42,13 +42,13 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-//#include "/home/linuxlaitang/obj-avoid/src/Fast-Planner/fast_planner/path_searching/include/path_searching/grid_map.h"
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/time_synchronizer.h>
 
 #include <plan_env/raycast.h>
+#include <plan_env/grid_map.h>
 
 #define logit(x) (log((x) / (1 - (x))))
 

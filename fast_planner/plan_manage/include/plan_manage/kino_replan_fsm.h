@@ -37,7 +37,7 @@
 
 #include <bspline_opt/bspline_optimizer.h>
 #include <path_searching/kinodynamic_astar.h>
-#include <path_searching/grid_map.h>
+#include <plan_env/grid_map.h>
 #include <plan_env/edt_environment.h>
 #include <plan_env/obj_predictor.h>
 #include <plan_env/sdf_map.h>

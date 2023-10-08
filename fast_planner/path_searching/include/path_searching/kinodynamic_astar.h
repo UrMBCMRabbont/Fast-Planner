@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <utility>
 #include "plan_env/edt_environment.h"
-#include <path_searching/grid_map.h>
+#include <plan_env/grid_map.h>
 
 namespace fast_planner {
 // #define REACH_HORIZON 1

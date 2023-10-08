@@ -931,9 +931,9 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
   for (int i = 0; i < max_x; i++){
     for(int j = 0; j<max_y;j++){
       Eigen::Vector3d v(1.0*i, 1.0*j, 0.0);
-      //if(global_map.getInflateOccupancy(v,v)){
+      if(global_map.getInflateOccupancy(v,v)){
         //setOccupied(v);
-      //}
+      }
     }
   }
 

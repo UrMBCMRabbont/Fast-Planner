@@ -3,7 +3,6 @@
 #include <vector>
 #include <Eigen/Eigen>
 #include <nav_msgs/OccupancyGrid.h>
-#include <plan_env/edt_environment.h>
 #include <ros/console.h>
 #include <ros/ros.h>
 #include <Eigen/Eigen>
@@ -14,7 +13,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include "plan_env/edt_environment.h"
 class GridMap{
 public:
     int origin_x, origin_y, width, height;
