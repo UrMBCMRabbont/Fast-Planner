@@ -90,7 +90,6 @@ private:
   /* planning data */
   bool trigger_, have_target_, have_odom_;
   FSM_EXEC_STATE exec_state_;
-  GridMap global_map;
 
   Eigen::Vector3d odom_pos_, odom_vel_;  // odometry state
   Eigen::Quaterniond odom_orient_;

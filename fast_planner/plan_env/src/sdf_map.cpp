@@ -21,8 +21,6 @@
 * along with Fast-Planner. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
 #include "plan_env/sdf_map.h"
 
 // #define current_img_ md_.depth_image_[image_cnt_ & 1]
@@ -926,8 +924,16 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
 
             int idx_inf = toAddress(inf_pt);
 
-            md_.occupancy_buffer_inflate_[idx_inf] = 1;
+            md_.occupancy_buffer_inflate_[idx_inf] = 0;
           }
+    }
+  }
+  for (int i = 0; i < max_x; i++){
+    for(int j = 0; j<max_y;j++){
+      Eigen::Vector3d v(1.0*i, 1.0*j, 0.0);
+      //if(global_map.getInflateOccupancy(v,v)){
+        //setOccupied(v);
+      //}
     }
   }
 

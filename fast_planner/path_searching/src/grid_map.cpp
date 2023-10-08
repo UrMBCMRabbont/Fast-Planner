@@ -1,5 +1,6 @@
 #include <path_searching/grid_map.h>
 
+GridMap global_map;
 
 
 std::vector<int> GridMap::WorldToMap(double wx, double wy, Eigen::Vector3d offset_) {

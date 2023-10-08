@@ -39,7 +39,7 @@ KinodynamicAstar::~KinodynamicAstar()
 }
 
 int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
-                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, GridMap global_map, bool init, bool dynamic, double time_start)
+                             Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
 {
   start_vel_ = start_v;
   start_acc_ = start_a;
@@ -100,7 +100,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
       {
         // Check whether shot traj exist
         estimateHeuristic(cur_node->state, end_state, time_to_goal);
-        computeShotTraj(cur_node->state, end_state, time_to_goal, global_map);
+        computeShotTraj(cur_node->state, end_state, time_to_goal);
         if (init_search)
           ROS_ERROR("Shot in first search loop!");
       }
@@ -397,7 +397,7 @@ double KinodynamicAstar::estimateHeuristic(Eigen::VectorXd x1, Eigen::VectorXd x
   return 1.0 * (1 + tie_breaker_) * cost;
 }
 
-bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd state2, double time_to_goal, GridMap global_map)
+bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd state2, double time_to_goal)
 {
   /* ---------- get coefficient ---------- */
   const Vector3d p0 = state1.head(3);

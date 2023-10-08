@@ -15,7 +15,6 @@
 #include <unordered_map>
 #include <utility>
 #include "plan_env/edt_environment.h"
-#include <path_searching/grid_map.h>
 class GridMap{
 public:
     int origin_x, origin_y, width, height;
@@ -27,3 +26,4 @@ private:
     std::vector<int> WorldToMap(double wx, double wy, Eigen::Vector3d offset_);
     std::vector<double> MapToWorld(double my, double mx);
 };
+extern GridMap global_map;

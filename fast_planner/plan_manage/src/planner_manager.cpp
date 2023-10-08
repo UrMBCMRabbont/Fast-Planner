@@ -126,7 +126,7 @@ bool FastPlannerManager::checkTrajCollision(double& distance) {
 
 bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,
                                            Eigen::Vector3d start_acc, Eigen::Vector3d end_pt,
-                                           Eigen::Vector3d end_vel, GridMap global_map) {
+                                           Eigen::Vector3d end_vel) {
 
   std::cout << "[kino replan]: -----------------------" << std::endl;
   cout << "start: " << start_pt.transpose() << ", " << start_vel.transpose() << ", "
@@ -153,14 +153,14 @@ bool FastPlannerManager::kinodynamicReplan(Eigen::Vector3d start_pt, Eigen::Vect
 
   kino_path_finder_->reset();
 
-  int status = kino_path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel,global_map, true);
+  int status = kino_path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, true);
 
   if (status == KinodynamicAstar::NO_PATH) {
     cout << "[kino replan]: kinodynamic search fail!" << endl;
 
     // retry searching with discontinuous initial state
     kino_path_finder_->reset();
-    status = kino_path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel,global_map, false);
+    status = kino_path_finder_->search(start_pt, start_vel, start_acc, end_pt, end_vel, false);
 
     if (status == KinodynamicAstar::NO_PATH) {
       cout << "[kino replan]: Can't find path." << endl;
