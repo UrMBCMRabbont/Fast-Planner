@@ -745,7 +745,7 @@ void SDFMap::clearAndInflateLocalMap() {
                 idx_inf >= mp_.map_voxel_num_(0) * mp_.map_voxel_num_(1) * mp_.map_voxel_num_(2)) {
               continue;
             }
-            md_.occupancy_buffer_inflate_[idx_inf] = 1;
+            md_.occupancy_buffer_inflate_[idx_inf] = 1;//added
           }
         }
       }
@@ -753,10 +753,15 @@ void SDFMap::clearAndInflateLocalMap() {
   // add virtual ceiling to limit flight height
   if (mp_.virtual_ceil_height_ > -0.5) {
     int ceil_id = floor((mp_.virtual_ceil_height_ - mp_.map_origin_(2)) * mp_.resolution_inv_);
-    for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x)
+    for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x){
       for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y) {
         md_.occupancy_buffer_inflate_[toAddress(x, y, ceil_id)] = 1;
+        Eigen::Vector3d v(1.0*x, 1.0*y, 0.0);
+        if(global_map.getInflateOccupancy(v,v)){
+          setOccupied(v);
+        }
       }
+    }
   }
 }
 
@@ -903,7 +908,7 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
 
       /* inflate the point */
       for (int x = -inf_step; x <= inf_step; ++x)
-        for (int y = -inf_step; y <= inf_step; ++y)
+        for (int y = -inf_step; y <= inf_step; ++y){
           for (int z = -inf_step_z; z <= inf_step_z; ++z) {
 
             p3d_inf(0) = pt.x + x * mp_.resolution_;
@@ -924,18 +929,22 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
 
             int idx_inf = toAddress(inf_pt);
 
-            md_.occupancy_buffer_inflate_[idx_inf] = 0;
+            md_.occupancy_buffer_inflate_[idx_inf] = 1;//added
           }
+        }
     }
   }
-  for (int i = 0; i < max_x; i++){
-    for(int j = 0; j<max_y;j++){
-      Eigen::Vector3d v(1.0*i, 1.0*j, 0.0);
-      if(global_map.getInflateOccupancy(v,v)){
-        //setOccupied(v);
-      }
+  if( md_.camera_pos_(0)>0 &&  md_.camera_pos_(1)>0){
+  for (float i = -mp_.local_update_range_(0)/2; i < mp_.local_update_range_(0)/2; i+=mp_.resolution_){
+    for(float j = -mp_.local_update_range_(1)/2; j<mp_.local_update_range_(1)/2;j+=mp_.resolution_){
+        Eigen::Vector3d v(1.0*i+md_.camera_pos_(0), 1.0*j+md_.camera_pos_(1), 0.0);
+        if(global_map.getInflateOccupancy(v,v)){
+          setOccupied(v);
+        }
     }
   }
+  }
+  
 
   min_x = min(min_x, md_.camera_pos_(0));
   min_y = min(min_y, md_.camera_pos_(1));
