@@ -85,6 +85,7 @@ inline Eigen::Vector3d GridMap::IndexToPos(int idx){
     Eigen::Vector3d pos;
     pos(0) = static_cast<int>(idx/width*resolution);
     pos(1) = static_cast<int>(idx%width*resolution);
+    pos(2) = 0;
 
 	return pos;
 }
