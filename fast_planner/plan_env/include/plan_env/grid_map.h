@@ -18,6 +18,7 @@ public:
     int origin_x, origin_y, width, height;
     float resolution;
     std::vector<int> mapData;
+    std::vector<int> obstacle_idx;
     inline int getInflateOccupancy(Eigen::Vector3d pos,Eigen::Vector3d offset_);
 private:
     inline int posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_);
@@ -72,6 +73,38 @@ inline int GridMap::posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_){
 	}
     grid_idx = temp[0]*width + temp[1];
 	return 1;
+}
+
+inline vector<int> getObstclesIdx(vector<int>arr, int idx_begin, int idx_end){
+    int l = 0, r = arr.size()-1;
+    vector<int>::iterator start = arr.begin(), end;
+    vector<int> temp;
+    int x = idx_begin;
+     while (l <= r) {
+        int m = l + (r - l) / 2;
+ 
+        // Check if x is present at mid
+        if (arr[m] == x||(arr[m-1]<x && x<arr[m]))
+            if(start == arr.begin()){
+                start = arr.begin()+m;
+                l = m+1;
+                r = arr.size()-1;
+                x = idx_end;
+            }else{
+                end = arr.begin()+m+(arr[m] == x?1:0);
+                temp.assign(start,end);
+                return temp;
+            }
+            
+ 
+        // If x greater, ignore left half
+        if (arr[m] < x)
+            l = m + 1;
+ 
+        // If x is smaller, ignore right half
+        else
+            r = m - 1;
+    }
 }
 inline int GridMap::getInflateOccupancy(Eigen::Vector3d pos, Eigen::Vector3d offset_) {
 
