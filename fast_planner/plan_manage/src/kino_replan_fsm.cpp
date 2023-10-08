@@ -121,14 +121,14 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 	std::cout << "height:" << global_map.height << std::endl;
 	std::cout << "*********************************" << std::endl;
 	global_map.mapData.resize(global_map.width * global_map.height);
-  // global_map.obstacle_idx.clear();
+  global_map.obstacle_idx.clear();
 	// 获得地图数据 0自由通行区域，100障碍物
 	for (int i = 0; i <global_map.height; i++) {
 		for (int j = 0; j < global_map.width; j++) {
 			global_map.mapData[i * global_map.width + j] = int(msg->data[i * global_map.width + j]);
-      // if(int(msg->data[i * global_map.width + j]) == 100){
-        //global_map.obstacle_idx.push_back(i * global_map.width + j);
-      // }
+      if(int(msg->data[i * global_map.width + j]) == 100){
+        global_map.obstacle_idx.push_back(i * global_map.width + j);
+      }
 		}
 	}
 }

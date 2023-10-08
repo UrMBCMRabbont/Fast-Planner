@@ -21,7 +21,7 @@ public:
     std::vector<int> obstacle_idx;
     inline int getInflateOccupancy(Eigen::Vector3d pos,Eigen::Vector3d offset_);
     inline std::vector<int> getObstclesIdx(Eigen::Vector3d pos, Eigen::Vector3d offset_);
-    inline Eigen::Vector3d IndexToPos(int idx);
+    inline Eigen::Vector3d IndexToPos(int idx,Eigen::Vector3d cam_pos);
 private:
     inline int posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_);
     inline std::vector<int> WorldToMap(double wx, double wy, Eigen::Vector3d offset_);
@@ -81,10 +81,10 @@ inline int GridMap::posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_){
     grid_idx = temp[0]*width + temp[1];
 	return 1;
 }
-inline Eigen::Vector3d GridMap::IndexToPos(int idx){
+inline Eigen::Vector3d GridMap::IndexToPos(int idx,Eigen::Vector3d cam_pos){
     Eigen::Vector3d pos;
-    pos(0) = static_cast<int>(idx/width*resolution);
-    pos(1) = static_cast<int>(idx%width*resolution);
+    pos(1) = (1.0*(idx/width))*resolution;
+    pos(0) = (1.0*(idx%width))*resolution;
     pos(2) = 0;
 
 	return pos;

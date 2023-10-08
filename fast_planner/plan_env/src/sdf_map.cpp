@@ -935,11 +935,10 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
     }
   }
   vector<int>temp;
-  // temp = getObstclesIdx(md_.camera_pos_,mp_.local_update_range_);
-  // for(int i = 0;i<temp.size();i++){
-
-  //     setOccupied(v);
-  //   }
+  temp = global_map.getObstclesIdx(md_.camera_pos_,mp_.local_update_range_);
+  for(int i = 0;i<temp.size();i++){
+      setOccupied(global_map.IndexToPos(temp[i],md_.camera_pos_));
+    }
 
   // if( md_.camera_pos_(0)>0 &&  md_.camera_pos_(1)>0){
   // for (float i = -mp_.local_update_range_(0)/2; i < mp_.local_update_range_(0)/2; i+=mp_.resolution_){
