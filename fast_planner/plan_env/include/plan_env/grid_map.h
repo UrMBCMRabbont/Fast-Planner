@@ -13,6 +13,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#define GENERIC_MAX(x, y) ((x) > (y) ? (x) : (y))
 class GridMap{
 public:
     int origin_x, origin_y, width, height;
@@ -97,8 +98,8 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
     temp.clear();
     Eigen::Vector3d grid;
     //smallest grid idx
-    grid(0) = pos(0)-offset_(0)/2;
-    grid(1) = pos(1)-offset_(1)/2;
+    grid(0) = GENERIC_MAX(pos(0)-offset_(0)/2, 0);
+    grid(1) = GENERIC_MAX(pos(1)-offset_(1)/2, 0);
     if(!posToIndex(grid,grid)){
         return temp;
     }
