@@ -15,11 +15,13 @@ std::vector<int> GridMap::WorldToMap(double wx, double wy, Eigen::Vector3d offse
 	// int mx = int((1.0 * (wy - float(origin_y))) / resolution);
 	int my = int((1.0 * (wx)) / resolution);
 	int mx = int((1.0 * (wy)) / resolution);
+	// int my = int((1.0 * (wx)) );
+	// int mx = int((1.0 * (wy)) );
 	ROS_INFO("\nPOS_after_clac:\nx:%d y:%d\n",mx,my);
 	
 	if (mx < width && my < height) {
-		v.push_back(my);
 		v.push_back(mx);
+		v.push_back(my);
 		return v;
 	}
 }
@@ -43,14 +45,17 @@ std::vector<double> GridMap::MapToWorld(double my, double mx) {
 int GridMap::posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_){
     std::vector<int> temp;
     temp = WorldToMap(pos(0),pos(1),offset_);
-    return temp[0]*width + temp[1];
+	if(temp[0]<0||temp[1]<0){
+		return 0;
+	}
+    grid_idx = temp[0]*width + temp[1];
+	return 1;
 }
 int GridMap::getInflateOccupancy(Eigen::Vector3d pos, Eigen::Vector3d offset_) {
 
-	ROS_INFO("map grid val:%d",mapData[posToIndex(pos,offset_)]);
-    if(mapData[posToIndex(pos,offset_)]<0){
+    if(!posToIndex(pos,offset_)){
         return 0;
     }
-    return (mapData[posToIndex(pos,offset_)] == 100? 1 : 0);
-	// return 0;
+	ROS_INFO("map grid val:%d",mapData[grid_idx]);
+    return (mapData[grid_idx] == 100? 1 : 0);
 }

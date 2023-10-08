@@ -23,5 +23,6 @@ private:
     int posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_);
     std::vector<int> WorldToMap(double wx, double wy, Eigen::Vector3d offset_);
     std::vector<double> MapToWorld(double my, double mx);
+    int grid_idx = 0;
 };
 extern GridMap global_map;
