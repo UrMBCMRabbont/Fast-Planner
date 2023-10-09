@@ -105,8 +105,8 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
     }
     int x = grid_idx;
 
-    grid(0) = pos(0)+offset_(0)/2;
-    grid(1) = pos(1)+offset_(1)/2;
+    grid(0) = pos(0)+offset_(0);
+    grid(1) = pos(1)+offset_(1);
     if(!posToIndex(grid,grid)){
         return temp;
     }
