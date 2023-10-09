@@ -59,8 +59,10 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
       nh.subscribe("/waypoint_generator/waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("/odom_world", 1, &KinoReplanFSM::odometryCallback, this);
   global_map_sub_ = nh.subscribe("/map", 1, &KinoReplanFSM::MapCallback, this);
+  table_seq_sub_ = nh.subscribe("/table_seq", 1, &KinoReplanFSM::TableCallback, this);
 
   replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 10);
+  tableDisplay_pub_  = nh.advertise<visualization_msgs::Marker>("/table_display_point", 10);
   new_pub_     = nh.advertise<std_msgs::Empty>("/planning/new", 10);
   bspline_pub_ = nh.advertise<plan_manage::Bspline>("/planning/bspline", 10);
 }
@@ -132,6 +134,21 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 		}
 	}
 }
+void KinoReplanFSM::TableCallback(const nav_msgs::PathConstPtr& msg){
+  std::pair<float,float> table_pos;
+ 
+  for (char i=0;i<msg->poses.size();i++) {
+    table_pos.first = msg->poses[i].pose.position.x-global_map.origin_x;
+    table_pos.second = msg->poses[i].pose.position.y-global_map.origin_y;
+    ROS_INFO("Table_Pos: %f %f",table_pos.first,table_pos.second);
+    global_map.table_seq.push_back(table_pos);
+  }
+  
+  // while(1){
+
+  // }
+}
+
 void KinoReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call) {
   string state_str[5] = { "INIT", "WAIT_TARGET", "GEN_NEW_TRAJ", "REPLAN_TRAJ", "EXEC_TRAJ" };
   int    pre_s        = int(exec_state_);

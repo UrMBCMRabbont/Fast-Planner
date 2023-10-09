@@ -20,6 +20,7 @@ public:
     float resolution;
     std::vector<int> mapData;
     std::vector<int> obstacle_idx;
+    std::vector<std::pair<float,float>> table_seq;
     inline int getInflateOccupancy(Eigen::Vector3d pos,Eigen::Vector3d offset_);
     inline std::vector<int> getObstclesIdx(Eigen::Vector3d pos, Eigen::Vector3d offset_);
     inline Eigen::Vector3d IndexToPos(int idx,Eigen::Vector3d cam_pos);

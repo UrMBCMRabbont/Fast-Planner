@@ -35,6 +35,14 @@ Toolbars:
 Visualization Manager:
   Class: ""
   Displays:
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /table_display_point
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
     - Class: rviz/Axes
       Enabled: true
       Length: 10

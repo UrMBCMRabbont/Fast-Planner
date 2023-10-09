@@ -101,8 +101,8 @@ private:
   /* ROS utils */
   ros::NodeHandle node_;
   ros::Timer exec_timer_, safety_timer_, vis_timer_, test_something_timer_;
-  ros::Subscriber waypoint_sub_, odom_sub_, global_map_sub_;
-  ros::Publisher replan_pub_, new_pub_, bspline_pub_;
+  ros::Subscriber waypoint_sub_, odom_sub_, global_map_sub_,table_seq_sub_;
+  ros::Publisher replan_pub_, new_pub_, bspline_pub_,tableDisplay_pub_;
 
   /* helper functions */
   bool callKinodynamicReplan();        // front-end and back-end method
@@ -117,6 +117,7 @@ private:
   void waypointCallback(const nav_msgs::PathConstPtr& msg);
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
   void MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg);
+  void TableCallback(const nav_msgs::PathConstPtr& msg);
 
 public:
   KinoReplanFSM(/* args */) {
