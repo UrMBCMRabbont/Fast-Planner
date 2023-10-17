@@ -53,12 +53,14 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
 
   /* callback */
   exec_timer_   = nh.createTimer(ros::Duration(0.01), &KinoReplanFSM::execFSMCallback, this);
+  table_timer_   = nh.createTimer(ros::Duration(0.01), &KinoReplanFSM::tableFSMCallback, this);
   safety_timer_ = nh.createTimer(ros::Duration(0.05), &KinoReplanFSM::checkCollisionCallback, this);
 
   waypoint_sub_ =
       nh.subscribe("/waypoint_generator/waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("/odom_world", 1, &KinoReplanFSM::odometryCallback, this);
-  global_map_sub_ = nh.subscribe("/map", 1, &KinoReplanFSM::MapCallback, this);
+  global_map_sub_ = nh.subscribe("/mapssadsasf", 1, &KinoReplanFSM::MapCallback, this); //Amber
+  table_seq_sub_ = nh.subscribe("/table_seq", 1, &KinoReplanFSM::table_callback, this);
 
   replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 10);
   tableDisplay_pub_  = nh.advertise<visualization_msgs::Marker>("/table_display_point", 10);
@@ -92,7 +94,17 @@ void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
   else if (exec_state_ == EXEC_TRAJ)
     changeFSMExecState(REPLAN_TRAJ, "TRIG");
 }
-
+void KinoReplanFSM::addTableWaypoint(std::pair<float,float> pos) {
+  trigger_ = true;
+  end_pt_ << pos.first, pos.second, 1.0;
+  visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
+  end_vel_.setZero();
+  have_target_ = true;
+  if (exec_state_ == WAIT_TARGET)
+    changeFSMExecState(GEN_NEW_TRAJ, "TRIG");
+  else if (exec_state_ == EXEC_TRAJ)
+    changeFSMExecState(REPLAN_TRAJ, "TRIG");
+}
 void KinoReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr& msg) {
   odom_pos_(0) = msg->pose.pose.position.x;
   odom_pos_(1) = msg->pose.pose.position.y;
@@ -156,7 +168,26 @@ void KinoReplanFSM::printFSMExecState() {
 
   cout << "[FSM]: state: " + state_str[int(exec_state_)] << endl;
 }
+void KinoReplanFSM::table_callback(const nav_msgs::PathConstPtr& tablepos_msg){
+    std::pair<float,float> table_pos;
+    for (int i=0;i<tablepos_msg->poses.size();i++) {
+        table_pos.first = tablepos_msg->poses[i].pose.position.x;
+        table_pos.second = tablepos_msg->poses[i].pose.position.y;
+        global_map.table_seq.push_back(table_pos);
+        ROS_INFO("Table_Pos: %f %f\n",table_pos.first,table_pos.second);
+    }
+    global_map.table_seq.push_back(global_map.table_seq[0]);
+    // while(1){
 
+    // }
+   // new_table = true;
+}
+void KinoReplanFSM::tableFSMCallback(const ros::TimerEvent& e) {
+  if(global_map.table_seq.size()>0 && exec_state_ == WAIT_TARGET){
+    addTableWaypoint(global_map.table_seq[0]);
+    global_map.table_seq.erase(global_map.table_seq.begin());
+  }
+}
 void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
   static int fsm_num = 0;
   fsm_num++;
@@ -168,7 +199,7 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
   }
   
   // table_seq: notify fsm state
-  publishExecState(exec_state_);
+  //publishExecState(exec_state_);
   switch (exec_state_) {
     case INIT: {
       if (!have_odom_) {
