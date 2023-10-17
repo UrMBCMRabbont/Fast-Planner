@@ -168,50 +168,6 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   receive_traj_ = true;
 }
 
-void z0_bsplineCallback(plan_manage::BsplinePtr msg) {
-  // parse pos traj
-
-  Eigen::MatrixXd pos_pts(msg->pos_pts.size(), 3);
-
-  Eigen::VectorXd knots(msg->knots.size());
-  for (int i = 0; i < msg->knots.size(); ++i) {
-    knots(i) = msg->knots[i];
-  }
-
-  for (int i = 0; i < msg->pos_pts.size(); ++i) {
-    pos_pts(i, 0) = msg->pos_pts[i].x;
-    pos_pts(i, 1) = msg->pos_pts[i].y;
-    msg->pos_pts[i].z = 0.0;
-    pos_pts(i, 2) = msg->pos_pts[i].z;
-  }
-
-  NonUniformBspline pos_traj(pos_pts, msg->order, 0.1);
-  pos_traj.setKnot(knots);
-
-  // parse yaw traj
-
-  Eigen::MatrixXd yaw_pts(msg->yaw_pts.size(), 1);
-  for (int i = 0; i < msg->yaw_pts.size(); ++i) {
-    yaw_pts(i, 0) = msg->yaw_pts[i];
-  }
-
-  NonUniformBspline yaw_traj(yaw_pts, msg->order, msg->yaw_dt);
-
-  start_time_ = msg->start_time;
-  traj_id_ = msg->traj_id;
-
-  traj_.clear();
-  traj_.push_back(pos_traj);
-  traj_.push_back(traj_[0].getDerivative());
-  traj_.push_back(traj_[1].getDerivative());
-  traj_.push_back(yaw_traj);
-  traj_.push_back(yaw_traj.getDerivative());
-
-  traj_duration_ = traj_[0].getTimeSum();
-
-  receive_traj_ = true;
-}
-
 void replanCallback(std_msgs::Empty msg) {
   /* reset duration */
   const double time_out = 0.01;

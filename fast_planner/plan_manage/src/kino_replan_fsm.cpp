@@ -306,14 +306,6 @@ void KinoReplanFSM::checkCollisionCallback(const ros::TimerEvent& e) {
 }
 
 bool KinoReplanFSM::callKinodynamicReplan() {
-      // set z=0.0 plane
-      start_pt_[2] = 0.0;
-      start_vel_[2] = 0.0;
-      start_acc_[2] = 0.0;
-      end_pt_[2] = 0.0;
-      end_vel_[2] = 0.0;
-      // set z=0.0 plane
-
   bool plan_success =
       planner_manager_->kinodynamicReplan(start_pt_, start_vel_, start_acc_, end_pt_, end_vel_);
 
