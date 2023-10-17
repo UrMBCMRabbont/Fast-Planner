@@ -59,12 +59,12 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
       nh.subscribe("/waypoint_generator/waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("/odom_world", 1, &KinoReplanFSM::odometryCallback, this);
   global_map_sub_ = nh.subscribe("/map", 1, &KinoReplanFSM::MapCallback, this);
-  table_seq_sub_ = nh.subscribe("/table_seq", 1, &KinoReplanFSM::TableCallback, this);
 
   replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 10);
   tableDisplay_pub_  = nh.advertise<visualization_msgs::Marker>("/table_display_point", 10);
   new_pub_     = nh.advertise<std_msgs::Empty>("/planning/new", 10);
   bspline_pub_ = nh.advertise<plan_manage::Bspline>("/planning/bspline", 10);
+  kino_fsm_pub_ = nh.advertise<std_msgs::Int32>("/kino_fsm_state", 10);
 }
 
 void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
@@ -110,17 +110,19 @@ void KinoReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr& msg) {
   have_odom_ = true;
 }
 void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
+  if(global_map.init_done){
+    return;
+  }
 	global_map.origin_x = msg->info.origin.position.x;	 // 获得栅格地图的原点x值(相对世界坐标系),单位为m
 	global_map.origin_y = msg->info.origin.position.y;	 // 获得栅格地图的原点y值(相对世界坐标系),单位为m
 	global_map.resolution = msg->info.resolution;		 // 获得栅格地图的分辨率
 	global_map.width = msg->info.width;				 // 获得栅格地图的宽
 	global_map.height = msg->info.height;				 // 获得栅格地图的高
 	std::cout << "***********map message**********" << std::endl;
-	std::cout << "origin_x:" << global_map.origin_x << std::endl;
-	std::cout << "origin_y:" << global_map.origin_y << std::endl;
 	std::cout << "resolution:" << global_map.resolution << std::endl;
 	std::cout << "width:" << global_map.width << std::endl;
 	std::cout << "height:" << global_map.height << std::endl;
+	std::cout << "origin_xy:" << global_map.origin_x <<" "<< global_map.origin_y << std::endl;
 	std::cout << "*********************************" << std::endl;
 	global_map.mapData.resize(global_map.width * global_map.height);
   global_map.obstacle_idx.clear();
@@ -133,20 +135,13 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
       }
 		}
 	}
+  global_map.init_done = 1;
 }
-void KinoReplanFSM::TableCallback(const nav_msgs::PathConstPtr& msg){
-  std::pair<float,float> table_pos;
- 
-  for (char i=0;i<msg->poses.size();i++) {
-    table_pos.first = msg->poses[i].pose.position.x-global_map.origin_x;
-    table_pos.second = msg->poses[i].pose.position.y-global_map.origin_y;
-    ROS_INFO("Table_Pos: %f %f",table_pos.first,table_pos.second);
-    global_map.table_seq.push_back(table_pos);
-  }
-  
-  // while(1){
 
-  // }
+void KinoReplanFSM::publishExecState(int exec_state_) {
+    std_msgs::Int32 msg;
+    msg.data = int(exec_state_);
+    kino_fsm_pub_.publish(msg);
 }
 
 void KinoReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call) {
@@ -171,7 +166,9 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
     if (!trigger_) cout << "wait for goal." << endl;
     fsm_num = 0;
   }
-
+  
+  // table_seq: notify fsm state
+  publishExecState(exec_state_);
   switch (exec_state_) {
     case INIT: {
       if (!have_odom_) {

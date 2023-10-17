@@ -32,6 +32,7 @@
 #include <nav_msgs/Path.h>
 #include <ros/ros.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/Int32.h>
 #include <vector>
 #include <visualization_msgs/Marker.h>
 
@@ -102,7 +103,7 @@ private:
   ros::NodeHandle node_;
   ros::Timer exec_timer_, safety_timer_, vis_timer_, test_something_timer_;
   ros::Subscriber waypoint_sub_, odom_sub_, global_map_sub_,table_seq_sub_;
-  ros::Publisher replan_pub_, new_pub_, bspline_pub_,tableDisplay_pub_;
+  ros::Publisher replan_pub_, new_pub_, bspline_pub_,tableDisplay_pub_, kino_fsm_pub_;
 
   /* helper functions */
   bool callKinodynamicReplan();        // front-end and back-end method
@@ -110,6 +111,8 @@ private:
                                        // optimization; 1: new, 2: replan
   void changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call);
   void printFSMExecState();
+  void publishExecState(int);
+  void publishChangeState();
 
   /* ROS functions */
   void execFSMCallback(const ros::TimerEvent& e);
@@ -117,8 +120,7 @@ private:
   void waypointCallback(const nav_msgs::PathConstPtr& msg);
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
   void MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg);
-  void TableCallback(const nav_msgs::PathConstPtr& msg);
-
+  
 public:
   KinoReplanFSM(/* args */) {
   }

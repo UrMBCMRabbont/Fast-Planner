@@ -6,7 +6,10 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Vector3.h>
 #include <nav_msgs/Path.h>
+#include <std_msgs/Int32.h>
 #include "sample_waypoints.h"
+#include <plan_env/grid_map.h>
+
 #include <vector>
 #include <deque>
 #include <boost/format.hpp>
@@ -22,6 +25,11 @@ string waypoint_type = string("manual");
 bool is_odom_ready;
 nav_msgs::Odometry odom;
 nav_msgs::Path waypoints;
+
+// series table_pos idx
+int tablepos_idx = 0;
+int exec_state_;
+bool new_table = false;
 
 // series waypoint needed
 std::deque<nav_msgs::Path> waypointSegments;
@@ -241,6 +249,54 @@ void traj_start_trigger_callback(const geometry_msgs::PoseStamped& msg) {
     }
 }
 
+
+void notifyfsm_callback(std_msgs::Int32 fsm_state){
+    exec_state_ = int(fsm_state.data);
+    // WAIT_TARGET == 1
+    if(exec_state_ == 1){
+        if(tablepos_idx > 0 && tablepos_idx == global_map.table_seq.size()){
+            global_map.table_seq.clear();
+            tablepos_idx = 0;
+            new_table = false;
+            std::cout << "cleared" << std::endl;
+        } else {
+            if(new_table){
+                geometry_msgs::PoseStamped::Ptr newtablePtr(new geometry_msgs::PoseStamped);
+                newtablePtr->header.seq = tablepos_idx;
+                newtablePtr->pose.position.x = global_map.table_seq[tablepos_idx].first;
+                newtablePtr->pose.position.y = global_map.table_seq[tablepos_idx].second;
+                newtablePtr->pose.position.z = 0.0;
+                if(newtablePtr->pose.position.x == 0 ||  newtablePtr->pose.position.y == 0){
+                    std::cout << "xy == origin point" << std::endl;
+                    std::cout << "tablepos_idx" << tablepos_idx << std::endl;
+                } else {
+                    goal_callback(newtablePtr);
+                    tablepos_idx++;
+                    new_table = false;
+                }
+            }
+        }
+    }
+    else if(exec_state_ == 4) {
+        new_table = true;
+    }
+    std::cout << "EXEC_STATE: " << exec_state_ << std::endl;
+}
+
+void table_callback(const nav_msgs::PathConstPtr& tablepos_msg){
+    std::pair<float,float> table_pos;
+    for (int i=0;i<tablepos_msg->poses.size();i++) {
+        table_pos.first = tablepos_msg->poses[i].pose.position.x;
+        table_pos.second = tablepos_msg->poses[i].pose.position.y;
+        global_map.table_seq.push_back(table_pos);
+        ROS_INFO("Table_Pos: %f %f\n",table_pos.first,table_pos.second);
+    }
+    // while(1){
+
+    // }
+    new_table = true;
+}
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "waypoint_generator");
     ros::NodeHandle n("~");
@@ -248,8 +304,13 @@ int main(int argc, char** argv) {
     ros::Subscriber sub1 = n.subscribe("odom", 10, odom_callback);
     ros::Subscriber sub2 = n.subscribe("goal", 10, goal_callback);
     ros::Subscriber sub3 = n.subscribe("traj_start_trigger", 10, traj_start_trigger_callback);
+    ros::Subscriber table_seq_sub_ = n.subscribe("/table_seq", 1, table_callback);
+    ros::Subscriber kino_fsm_sub_ = n.subscribe("/kino_fsm_state", 10, notifyfsm_callback);
+    // ros::Timer table_pos_timer = n.createTimer(ros::Duration(1.0), kino_fsm_callback);
+
     pub1 = n.advertise<nav_msgs::Path>("waypoints", 50);
     pub2 = n.advertise<geometry_msgs::PoseArray>("waypoints_vis", 10);
+
 
     trigged_time = ros::Time(0);
 

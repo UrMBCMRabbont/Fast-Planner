@@ -16,14 +16,15 @@
 #define GENERIC_MAX(x, y) ((x) > (y) ? (x) : (y))
 class GridMap{
 public:
-    int origin_x, origin_y, width, height;
-    float resolution;
+    int width, height, init_done = 0;
+    float resolution, origin_x, origin_y;
     std::vector<int> mapData;
     std::vector<int> obstacle_idx;
     std::vector<std::pair<float,float>> table_seq;
     inline int getInflateOccupancy(Eigen::Vector3d pos,Eigen::Vector3d offset_);
     inline std::vector<int> getObstclesIdx(Eigen::Vector3d pos, Eigen::Vector3d offset_);
     inline Eigen::Vector3d IndexToPos(int idx,Eigen::Vector3d cam_pos);
+    inline std::pair<float,float> TablePosCalc(double mx, double my);
 private:
     inline int posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_);
     inline std::vector<int> WorldToMap(double wx, double wy, Eigen::Vector3d offset_);
@@ -32,11 +33,21 @@ private:
 };
 
 
+inline std::pair<float,float> GridMap::TablePosCalc(double mx, double my){
+    if(!init_done){
+         ROS_INFO("That's why u shit on9!]\n");
+    }
+    std::pair<float,float> temp;
+    temp.first = (mx-origin_x);
+    temp.second = -(my-origin_y);
+    ROS_INFO("Shit:%f %f || ori:%f %f\n",temp.first,temp.second, origin_x,origin_y);
+    return temp;
+}
 
 
 
 inline std::vector<int> GridMap::WorldToMap(double wx, double wy, Eigen::Vector3d offset_) {
-	ROS_INFO("\nPOS_fastplanner:\nx:%f y:%f\nOrigin:\n%d,%d\nres:%f",wx,wy,origin_x,origin_y,resolution);
+	//ROS_INFO("\nPOS_fastplanner:\nx:%f y:%f\nOrigin:\n%f,%f\nres:%f",wx,wy,origin_x,origin_y,resolution);
 	std::vector<int> v;
 	if (wx < (1.0 * origin_x) || wy < (1.0 * origin_y)) {
 		v.push_back(-1);
@@ -49,7 +60,7 @@ inline std::vector<int> GridMap::WorldToMap(double wx, double wy, Eigen::Vector3
 	int mx = int((1.0 * (wy)) / resolution);
 	// int my = int((1.0 * (wx)) );
 	// int mx = int((1.0 * (wy)) );
-	ROS_INFO("\nPOS_after_clac:\nx:%d y:%d\n",mx,my);
+	//ROS_INFO("\nPOS_after_clac:\nx:%d y:%d\n [%f,%f]",mx,my,origin_x,origin_y);
 	
 	if (mx < width && my < height) {
 		v.push_back(mx);
@@ -144,7 +155,7 @@ inline int GridMap::getInflateOccupancy(Eigen::Vector3d pos, Eigen::Vector3d off
     if(!posToIndex(pos,offset_)){
         return 0;
     }
-	ROS_INFO("map grid val:%d",mapData[grid_idx]);
+	// ROS_INFO("map grid val:%d",mapData[grid_idx]);
     return (mapData[grid_idx] == 100? 1 : 0);
 }
 extern GridMap global_map;
