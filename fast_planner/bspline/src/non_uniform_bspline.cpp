@@ -100,14 +100,14 @@ Eigen::VectorXd NonUniformBspline::evaluateDeBoor(const double& u) {
     }
   }
 
-  // std::cout << "lai deboor size: " << d[p_].size() << std::endl;
-  // if(d[p_].size() == 3){
-  //   if(d[p_][d[p_].size()-1] > 0.1){
-  //     while(true){
-  //       std::cout << "lai deboor return: " << d[p_] << std::endl;
-  //     }
-  //   }
-  // }
+  std::cout << "lai deboor size: " << d[p_].size() << std::endl;
+  if(d[p_].size() == 3){
+    if(d[p_][d[p_].size()-1] > 0.1){
+      while(true){
+        std::cout << "lai deboor return: " << d[p_] << std::endl;
+      }
+    }
+  }
 
   return d[p_];
 }
