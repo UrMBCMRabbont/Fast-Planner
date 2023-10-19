@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <utility>
 #define GENERIC_MAX(x, y) ((x) > (y) ? (x) : (y))
+#define GENERIC_MIN(x, y) ((x) < (y) ? (x) : (y))
 class GridMap{
 public:
     int width, height, init_done = 0;
@@ -110,34 +111,58 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
     temp.clear();
     Eigen::Vector3d grid;
     //smallest grid idx
-    grid(0) = GENERIC_MAX(pos(0)-offset_(0)/2, 0);
-    grid(1) = GENERIC_MAX(pos(1)-offset_(1)/2, 0);
+    grid(0) = GENERIC_MAX(pos(0)-offset_(0), 0);
+    grid(1) = GENERIC_MAX(pos(1)-offset_(1), 0);
     if(!posToIndex(grid,grid)){
+        ROS_INFO("You shit at min: %f %f\n",grid(0), grid(1));
         return temp;
     }
+    ROS_INFO("You good at min: %f %f\n",grid(0), grid(1));
     int x = grid_idx;
 
-    grid(0) = pos(0)+offset_(0);
-    grid(1) = pos(1)+offset_(1);
+    grid(0) = GENERIC_MIN(pos(0)+offset_(0),width*resolution);
+    grid(1) = GENERIC_MIN(pos(1)+offset_(1),height*resolution);
     if(!posToIndex(grid,grid)){
+        ROS_INFO("You shit at max: %f %f\n",grid(0), grid(1));
         return temp;
+    }
+    ROS_INFO("You good at max: %f %f\n",grid(0), grid(1));
+    static int add_zero = 0;
+    if(obstacle_idx[0] != 0){
+        obstacle_idx.insert (obstacle_idx.begin(), 0);
+        add_zero = 1;
+    }
+    if(obstacle_idx[obstacle_idx.size()-1] != (width * height -1)){
+        obstacle_idx.push_back(width * height-1);
     }
     //binary search
      while (l <= r) {
         int m = l + (r - l) / 2;
  
         // Check if x is present at mid
-        if (obstacle_idx[m] == x||(obstacle_idx[m-1]<x && x<obstacle_idx[m]))
+        if (obstacle_idx[m] == x||(obstacle_idx[m]<x && x<obstacle_idx[m+1])){
             if(start == obstacle_idx.begin()-1){
                 start = obstacle_idx.begin()+m;
-                l = m+1;
+                l = m;
                 r = obstacle_idx.size()-1;
                 x = grid_idx;
+                std::cout <<"m:"<<m <<" You can find 1st idx\n";
+                continue;
             }else{
-                end = obstacle_idx.begin()+m+(obstacle_idx[m] == x?1:0);
-                temp.assign(start,end);
+                end = obstacle_idx.begin()+m+((obstacle_idx[m] == x||(obstacle_idx[m]<x && x<obstacle_idx[m+1]))?1:0);
+                if(start == end){
+                    temp.push_back(obstacle_idx[m]);
+                }else{
+                    temp.assign(start,end);
+                }
+                std::cout <<"m:"<<m <<" You can find 2nd idx\n";
+                if(add_zero&&temp[0]==0){
+                    temp.erase(temp.begin()); 
+                }
                 return temp;
             }
+            
+        }
             
  
         // If x greater, ignore left half
@@ -148,6 +173,7 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
         else
             r = m - 1;
     }
+    ROS_INFO("You shit at u cannot find\n");
     return temp;
 }
 inline int GridMap::getInflateOccupancy(Eigen::Vector3d pos, Eigen::Vector3d offset_) {

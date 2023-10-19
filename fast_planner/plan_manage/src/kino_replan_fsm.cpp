@@ -59,7 +59,7 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   waypoint_sub_ =
       nh.subscribe("/waypoint_generator/waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("/odom_world", 1, &KinoReplanFSM::odometryCallback, this);
-  global_map_sub_ = nh.subscribe("/mapssadsasf", 1, &KinoReplanFSM::MapCallback, this); //Amber
+  global_map_sub_ = nh.subscribe("/map", 1, &KinoReplanFSM::MapCallback, this); //Amber
   table_seq_sub_ = nh.subscribe("/table_seq", 1, &KinoReplanFSM::table_callback, this);
 
   replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 10);
@@ -96,7 +96,7 @@ void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
 }
 void KinoReplanFSM::addTableWaypoint(std::pair<float,float> pos) {
   trigger_ = true;
-  end_pt_ << pos.first, pos.second, 1.0;
+  end_pt_ << pos.first, pos.second, 1.0; // laibon 1.0 or 0.0
   visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
   end_vel_.setZero();
   have_target_ = true;
