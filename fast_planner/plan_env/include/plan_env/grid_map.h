@@ -174,6 +174,9 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
             r = m - 1;
     }
     ROS_INFO("You shit at u cannot find\n");
+    if(start != obstacle_idx.begin()-1){
+        temp.assign(start,obstacle_idx.end());
+    }
     return temp;
 }
 inline int GridMap::getInflateOccupancy(Eigen::Vector3d pos, Eigen::Vector3d offset_) {
