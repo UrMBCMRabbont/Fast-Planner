@@ -43,7 +43,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
 {
   start_vel_ = start_v;
   start_acc_ = start_a;
-
+  //makesure github is good
   PathNodePtr cur_node = path_node_pool_[0];
   cur_node->parent = NULL;
   cur_node->state.head(3) = start_pt;
