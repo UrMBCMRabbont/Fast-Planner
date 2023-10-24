@@ -153,6 +153,9 @@ class KinodynamicAstar {
   void stateTransit(Eigen::Matrix<double, 6, 1>& state0,
                     Eigen::Matrix<double, 6, 1>& state1, Eigen::Vector3d um,
                     double tau);
+  void stateTransit_z0(Eigen::Matrix<double, 6, 1>& state0,
+                    Eigen::Matrix<double, 6, 1>& state1, Eigen::Vector3d um,
+                    double tau);
 
  public:
   KinodynamicAstar(){};

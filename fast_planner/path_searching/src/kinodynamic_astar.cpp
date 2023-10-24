@@ -160,11 +160,17 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
     }
     else
     {
-      for (double ax = -max_acc_; ax <= max_acc_ + 1e-3; ax += max_acc_ * res)
-        for (double ay = -max_acc_; ay <= max_acc_ + 1e-3; ay += max_acc_ * res)
-          for (double az = -max_acc_; az <= max_acc_ + 1e-3; az += max_acc_ * res)
+      // for (double ax = -max_acc_; ax <= max_acc_ + 1e-3; ax += max_acc_ * res)
+      //   for (double ay = -max_acc_; ay <= max_acc_ + 1e-3; ay += max_acc_ * res)
+      //     for (double az = -max_acc_; az <= max_acc_ + 1e-3; az += max_acc_ * res)
+      //     {
+      //       um << ax, ay, az;
+      //       inputs.push_back(um);
+      //     }
+      for (double ax = -0.8; ax <= 0.8 + 1e-3; ax += 0.8 * res)
+        for (double ay = -0.8; ay <= 0.8 + 1e-3; ay += 0.8 * res)
           {
-            um << ax, ay, az;
+            um << ax, ay, 0.0;
             inputs.push_back(um);
           }
       for (double tau = time_res * max_tau_; tau <= max_tau_; tau += time_res * max_tau_)
@@ -177,7 +183,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
       {
         um = inputs[i];
         double tau = durations[j];
-        stateTransit(cur_state, pro_state, um, tau);
+        stateTransit_z0(cur_state, pro_state, um, tau);
         pro_t = cur_node->time + tau;
 
         Eigen::Vector3d pro_pos = pro_state.head(3);
@@ -219,7 +225,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
         for (int k = 1; k <= check_num_; ++k)
         {
           double dt = tau * double(k) / double(check_num_);
-          stateTransit(cur_state, xt, um, dt);
+          stateTransit_z0(cur_state, xt, um, dt);
           pos = xt.head(3);
           if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 || global_map.getInflateOccupancy(pos, edt_environment_->sdf_map_->getOrigin()) == 1)
           {
@@ -608,7 +614,7 @@ std::vector<Eigen::Vector3d> KinodynamicAstar::getKinoTraj(double delta_t)
 
     for (double t = duration; t >= -1e-5; t -= delta_t)
     {
-      stateTransit(x0, xt, ut, t);
+      stateTransit_z0(x0, xt, ut, t);
       state_list.push_back(xt.head(3));
     }
     node = node->parent;
@@ -714,7 +720,7 @@ void KinodynamicAstar::getSamples(double& ts, vector<Eigen::Vector3d>& point_set
       Eigen::Matrix<double, 6, 1> xt;
       Vector3d ut = node->input;
 
-      stateTransit(x0, xt, ut, t);
+      stateTransit_z0(x0, xt, ut, t);
 
       point_set.push_back(xt.head(3));
       t -= ts;
@@ -781,6 +787,20 @@ void KinodynamicAstar::stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::
   Eigen::Matrix<double, 6, 1> integral;
   integral.head(3) = 0.5 * pow(tau, 2) * um;
   integral.tail(3) = tau * um;
+
+  state1 = phi_ * state0 + integral;
+}
+
+void KinodynamicAstar::stateTransit_z0(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
+                                    Eigen::Vector3d um, double tau)
+{
+  for (int i = 0; i < 2; ++i)
+    phi_(i, i + 3) = tau;
+
+  Eigen::Matrix<double, 6, 1> integral;
+  integral.head(2) = 0.5 * pow(tau, 2) * um.head(2);
+  for(int i = 0; i < 2; ++i)
+    integral(i+3,0) = tau * um(i, 0);
 
   state1 = phi_ * state0 + integral;
 }
