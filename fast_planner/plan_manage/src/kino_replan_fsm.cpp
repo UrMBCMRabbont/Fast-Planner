@@ -125,8 +125,7 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 	global_map.origin_y = msg->info.origin.position.y;	// 获得栅格地图的原点y值(相对世界坐标系),单位为m
 	global_map.resolution = msg->info.resolution;		// 获得栅格地图的分辨率
 	global_map.width = msg->info.width;					// 获得栅格地图的宽
-	global_map.height = msg->info.height;				// 获得栅格地图的高
-	global_map.costmapCallback(msg);
+	global_map.height = msg->info.height;				// 获得栅格地图的高]
 	std::cout << "***********map message**********" << std::endl;
 	std::cout << "resolution:" << global_map.resolution << std::endl;
 	std::cout << "width:" << global_map.width << std::endl;
@@ -140,6 +139,8 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 		for (int j = 0; j < global_map.width; j++) {
 			global_map.mapData[i * global_map.width + j] = int(msg->data[i * global_map.width + j]);
 			if (int(msg->data[i * global_map.width + j]) == 100) {
+				global_map.obstacles_arr.push_back(
+					ObstaclePtr(new PointObstacle(j * global_map.resolution, i * global_map.resolution)));
 				global_map.obstacle_idx.push_back(i * global_map.width + j);
 			}
 		}

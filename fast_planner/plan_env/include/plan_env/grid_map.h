@@ -27,7 +27,6 @@ public:
 	inline std::vector<int> getObstclesIdx(Eigen::Vector3d pos, Eigen::Vector3d offset_);
 	inline Eigen::Vector3d IndexToPos(int idx, Eigen::Vector3d cam_pos);
 	inline std::pair<float, float> TablePosCalc(double mx, double my);
-	void costmapCallback(const nav_msgs::OccupancyGridConstPtr& msg);
 	costmap_converter::ObstacleArrayConstPtr obstacles_arr;
 
 private:
@@ -35,41 +34,7 @@ private:
 	inline std::vector<int> WorldToMap(double wx, double wy, Eigen::Vector3d offset_);
 	inline std::vector<double> MapToWorld(double my, double mx);
 	int grid_idx = 0;
-    costmap_2d::Costmap2D map_;
 };
-void GridMap::costmapCallback(const nav_msgs::OccupancyGridConstPtr& msg) {
-	ROS_INFO_ONCE("Got first costmap callback. This message will be printed once");
-
-	if (msg->info.width != map_.getSizeInCellsX() || msg->info.height != map_.getSizeInCellsY() ||
-		msg->info.resolution != map_.getResolution()) {
-		ROS_INFO("New map format, resizing and resetting map...");
-		map_.resizeMap(msg->info.width, msg->info.height, msg->info.resolution, msg->info.origin.position.x,
-					   msg->info.origin.position.y);
-	} else {
-		map_.updateOrigin(0.0, 0.0);
-	}
-
-	for (std::size_t i = 0; i < msg->data.size(); ++i) {
-		unsigned int mx, my;
-		map_.indexToCells((unsigned int)i, mx, my);
-		map_.setCost(mx, my, msg->data[i] > 0 ? 255 : 0);
-	}
-
-	// convert
-	converter_->updateCostmap2D();
-	converter_->compute();
-	obstacles_arr = converter_->getObstacles();
-
-	// costmap_converter::ObstacleArrayConstPtr obstacles = converter_->getObstacles();
-
-	// if (!obstacles) return;
-
-	// obstacle_pub_.publish(obstacles);
-
-	// frame_id_ = msg->header.frame_id;
-
-	// publishAsMarker(frame_id_, *obstacles, marker_pub_);
-}
 inline std::pair<float, float> GridMap::TablePosCalc(double mx, double my) {
 	if (!init_done) {
 		ROS_INFO("That's why u shit on9!]\n");

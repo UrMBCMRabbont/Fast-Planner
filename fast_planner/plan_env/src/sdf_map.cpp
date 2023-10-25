@@ -1038,7 +1038,11 @@ void SDFMap::publishMapInflate(bool all_info) {
 				indexToPos(Eigen::Vector3i(x, y, z), pos);
 				if (pos(2) > mp_.visualization_truncate_height_) continue;
 				if (fabs(pos(2) - robot_height) < 0.000001 && pos(0) > 0 && pos(1) > 0) {
-					global_map.obstacles_arr.push_back(ObstaclePtr(new PointObstacle(pos(0), pos(1))));
+					if (global_map.obstacles_arr.size() > 0) {
+						global_map.obstacles_arr.push_back(ObstaclePtr(new PointObstacle(pos(0), pos(1))));
+						obstacle_pub_.publish(global_map.obstacles_arr);
+						global_map.obstacles_arr.clear();
+					}
 				}
 
 				pt.x = pos(0);
@@ -1055,7 +1059,6 @@ void SDFMap::publishMapInflate(bool all_info) {
 
 	pcl::toROSMsg(cloud, cloud_msg);
 	map_inf_pub_.publish(cloud_msg);  //
-	obstacle_pub_.publish(global_map.obstacles_arr);
 
 	// ROS_INFO("pub map");
 }
