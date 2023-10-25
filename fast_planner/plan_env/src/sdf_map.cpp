@@ -916,17 +916,6 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
 		setOccupied(global_map.IndexToPos(temp[i], md_.camera_pos_));
 	}
 
-	// if( md_.camera_pos_(0)>0 &&  md_.camera_pos_(1)>0){
-	// for (float i = -mp_.local_update_range_(0)/2; i < mp_.local_update_range_(0)/2; i+=mp_.resolution_){
-	//   for(float j = -mp_.local_update_range_(1)/2; j<mp_.local_update_range_(1)/2;j+=mp_.resolution_){
-	//       Eigen::Vector3d v(1.0*i+md_.camera_pos_(0), 1.0*j+md_.camera_pos_(1), 0.0);
-	//       if(global_map.getInflateOccupancy(v,v)){
-	//         setOccupied(v);
-	//       }
-	//   }
-	// }
-	// }
-
 	min_x = min(min_x, md_.camera_pos_(0));
 	min_y = min(min_y, md_.camera_pos_(1));
 	min_z = min(min_z, md_.camera_pos_(2));
@@ -1061,7 +1050,7 @@ void SDFMap::publishMapInflate(bool all_info) {
 	sensor_msgs::PointCloud2 cloud_msg;
 
 	pcl::toROSMsg(cloud, cloud_msg);
-	map_inf_pub_.publish(cloud_msg);
+	map_inf_pub_.publish(cloud_msg);  // Amber is on9
 
 	// ROS_INFO("pub map");
 }
