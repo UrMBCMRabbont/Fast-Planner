@@ -1,5 +1,6 @@
 #pragma once
 #include <costmap_2d/costmap_2d.h>
+#include <costmap_converter/costmap_converter_interface.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <ros/console.h>
 #include <ros/ros.h>
@@ -34,8 +35,9 @@ private:
 	inline std::vector<int> WorldToMap(double wx, double wy, Eigen::Vector3d offset_);
 	inline std::vector<double> MapToWorld(double my, double mx);
 	int grid_idx = 0;
+    costmap_2d::Costmap2D map_;
 };
-void costmapCallback(const nav_msgs::OccupancyGridConstPtr& msg) {
+void GridMap::costmapCallback(const nav_msgs::OccupancyGridConstPtr& msg) {
 	ROS_INFO_ONCE("Got first costmap callback. This message will be printed once");
 
 	if (msg->info.width != map_.getSizeInCellsX() || msg->info.height != map_.getSizeInCellsY() ||
@@ -50,7 +52,7 @@ void costmapCallback(const nav_msgs::OccupancyGridConstPtr& msg) {
 	for (std::size_t i = 0; i < msg->data.size(); ++i) {
 		unsigned int mx, my;
 		map_.indexToCells((unsigned int)i, mx, my);
-		map_.setCost(mx, my, msg->data[i] >= occupied_min_value_ ? 255 : 0);
+		map_.setCost(mx, my, msg->data[i] > 0 ? 255 : 0);
 	}
 
 	// convert

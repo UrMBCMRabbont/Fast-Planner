@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   cv_bridge
   message_filters
+  costmap_2d
 )
 
 find_package(Eigen3 REQUIRED)
@@ -21,6 +22,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES plan_env
  CATKIN_DEPENDS roscpp std_msgs
+ CATKIN_DEPENDS costmap_2d dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
