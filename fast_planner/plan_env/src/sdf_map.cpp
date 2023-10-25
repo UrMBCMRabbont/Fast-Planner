@@ -158,7 +158,7 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
 	esdf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/esdf", 10);
 	update_range_pub_ = node_.advertise<visualization_msgs::Marker>("/sdf_map/update_range", 10);
 
-	obstacle_pub_ = n_.advertise<costmap_converter::ObstacleArrayMsg>("/obstacles", 1000);
+	obstacle_pub_ = node_.advertise<costmap_converter::ObstacleArrayMsg>("/obstacles", 1000);
 	unknown_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/unknown", 10);
 	depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/depth_cloud", 10);
 
@@ -1017,6 +1017,13 @@ void SDFMap::publishMapInflate(bool all_info) {
 	pcl::PointXYZ pt;
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 
+  costmap_converter::ObstacleMsg obj;
+  geometry_msgs::Point32 obj_pt;
+  obj_pt.x = 0.0;
+  obj_pt.y = 0.0;
+  obj_pt.z = 0.0;
+  obj.polygon.points.push_back(obj_pt);
+
 	Eigen::Vector3i min_cut = md_.local_bound_min_;
 	Eigen::Vector3i max_cut = md_.local_bound_max_;
 
@@ -1038,10 +1045,10 @@ void SDFMap::publishMapInflate(bool all_info) {
 				indexToPos(Eigen::Vector3i(x, y, z), pos);
 				if (pos(2) > mp_.visualization_truncate_height_) continue;
 				if (fabs(pos(2) - robot_height) < 0.000001 && pos(0) > 0 && pos(1) > 0) {
-					if (global_map.obstacles_arr.size() > 0) {
-						global_map.obstacles_arr.push_back(ObstaclePtr(new PointObstacle(pos(0), pos(1))));
-						obstacle_pub_.publish(global_map.obstacles_arr);
-						global_map.obstacles_arr.clear();
+					if (global_map.obstacles_arr.obstacles.size() > 0) {
+            obj.polygon.points[0].x = pos(0);
+            obj.polygon.points[0].y = pos(1);
+						global_map.obstacles_arr.obstacles.push_back(obj);
 					}
 				}
 
@@ -1050,13 +1057,17 @@ void SDFMap::publishMapInflate(bool all_info) {
 				pt.z = pos(2);
 				cloud.push_back(pt);
 			}
-
+  
 	cloud.width = cloud.points.size();
 	cloud.height = 1;
 	cloud.is_dense = true;
 	cloud.header.frame_id = mp_.frame_id_;
 	sensor_msgs::PointCloud2 cloud_msg;
 
+  if (global_map.obstacles_arr.obstacles.size() > 0) {
+    obstacle_pub_.publish(global_map.obstacles_arr);
+    global_map.obstacles_arr.obstacles.erase(global_map.end_global_map+1,global_map.obstacles_arr.obstacles.end());
+  }
 	pcl::toROSMsg(cloud, cloud_msg);
 	map_inf_pub_.publish(cloud_msg);  //
 

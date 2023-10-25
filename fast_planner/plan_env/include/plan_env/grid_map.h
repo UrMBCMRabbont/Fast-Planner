@@ -27,7 +27,8 @@ public:
 	inline std::vector<int> getObstclesIdx(Eigen::Vector3d pos, Eigen::Vector3d offset_);
 	inline Eigen::Vector3d IndexToPos(int idx, Eigen::Vector3d cam_pos);
 	inline std::pair<float, float> TablePosCalc(double mx, double my);
-	costmap_converter::ObstacleArrayConstPtr obstacles_arr;
+    std::vector<costmap_converter::ObstacleMsg>::iterator end_global_map;
+	costmap_converter::ObstacleArrayMsg obstacles_arr;
 
 private:
 	inline int posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_);

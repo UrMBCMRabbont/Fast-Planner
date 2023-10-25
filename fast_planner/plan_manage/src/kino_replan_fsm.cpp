@@ -121,6 +121,12 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 	if (global_map.init_done) {
 		return;
 	}
+  costmap_converter::ObstacleMsg obj;
+  geometry_msgs::Point32 obj_pt;
+  obj_pt.x = 0.0;
+  obj_pt.y = 0.0;
+  obj_pt.z = 0.0;
+  obj.polygon.points.push_back(obj_pt);
 	global_map.origin_x = msg->info.origin.position.x;	// 获得栅格地图的原点x值(相对世界坐标系),单位为m
 	global_map.origin_y = msg->info.origin.position.y;	// 获得栅格地图的原点y值(相对世界坐标系),单位为m
 	global_map.resolution = msg->info.resolution;		// 获得栅格地图的分辨率
@@ -139,12 +145,14 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 		for (int j = 0; j < global_map.width; j++) {
 			global_map.mapData[i * global_map.width + j] = int(msg->data[i * global_map.width + j]);
 			if (int(msg->data[i * global_map.width + j]) == 100) {
-				global_map.obstacles_arr.push_back(
-					ObstaclePtr(new PointObstacle(j * global_map.resolution, i * global_map.resolution)));
+        obj.polygon.points[0].x = j * global_map.resolution;
+        obj.polygon.points[0].y = i * global_map.resolution;
+        global_map.obstacles_arr.obstacles.push_back(obj);
 				global_map.obstacle_idx.push_back(i * global_map.width + j);
 			}
 		}
 	}
+  global_map.end_global_map = global_map.obstacles_arr.obstacles.end();
 	global_map.init_done = 1;
 }
 

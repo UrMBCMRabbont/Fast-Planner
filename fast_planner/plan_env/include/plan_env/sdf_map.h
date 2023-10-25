@@ -24,7 +24,9 @@
 #ifndef _SDF_MAP_H
 #define _SDF_MAP_H
 
+
 #include <costmap_2d/costmap_2d.h>
+#include <costmap_converter/costmap_converter_interface.h>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <message_filters/subscriber.h>
