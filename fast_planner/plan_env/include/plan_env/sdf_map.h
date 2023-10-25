@@ -24,6 +24,7 @@
 #ifndef _SDF_MAP_H
 #define _SDF_MAP_H
 
+#include <costmap_2d/costmap_2d.h>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <message_filters/subscriber.h>
@@ -272,7 +273,7 @@ private:
 
 	ros::Subscriber indep_depth_sub_, indep_odom_sub_, indep_pose_sub_, indep_cloud_sub_;
 	ros::Publisher map_pub_, esdf_pub_, map_inf_pub_, update_range_pub_;
-	ros::Publisher unknown_pub_, depth_pub_;
+	ros::Publisher unknown_pub_, depth_pub_, obstacle_pub_;
 	ros::Timer occ_timer_, esdf_timer_, vis_timer_;
 
 	//

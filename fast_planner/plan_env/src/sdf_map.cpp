@@ -158,6 +158,7 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
 	esdf_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/esdf", 10);
 	update_range_pub_ = node_.advertise<visualization_msgs::Marker>("/sdf_map/update_range", 10);
 
+	obstacle_pub_ = n_.advertise<costmap_converter::ObstacleArrayMsg>("/obstacles", 1000);
 	unknown_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/unknown", 10);
 	depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/depth_cloud", 10);
 
@@ -1036,6 +1037,9 @@ void SDFMap::publishMapInflate(bool all_info) {
 				Eigen::Vector3d pos;
 				indexToPos(Eigen::Vector3i(x, y, z), pos);
 				if (pos(2) > mp_.visualization_truncate_height_) continue;
+				if (fabs(pos(2) - robot_height) < 0.000001 && pos(0) > 0 && pos(1) > 0) {
+					global_map.obstacles_arr.push_back(ObstaclePtr(new PointObstacle(pos(0), pos(1))));
+				}
 
 				pt.x = pos(0);
 				pt.y = pos(1);
@@ -1050,7 +1054,8 @@ void SDFMap::publishMapInflate(bool all_info) {
 	sensor_msgs::PointCloud2 cloud_msg;
 
 	pcl::toROSMsg(cloud, cloud_msg);
-	map_inf_pub_.publish(cloud_msg);  // Amber is on9
+	map_inf_pub_.publish(cloud_msg);  //
+	obstacle_pub_.publish(global_map.obstacles_arr);
 
 	// ROS_INFO("pub map");
 }
