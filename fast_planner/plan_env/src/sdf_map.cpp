@@ -1017,12 +1017,12 @@ void SDFMap::publishMapInflate(bool all_info) {
 	pcl::PointXYZ pt;
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 
-  costmap_converter::ObstacleMsg obj;
-  geometry_msgs::Point32 obj_pt;
-  obj_pt.x = 0.0;
-  obj_pt.y = 0.0;
-  obj_pt.z = 0.0;
-  obj.polygon.points.push_back(obj_pt);
+	costmap_converter::ObstacleMsg obj;
+	geometry_msgs::Point32 obj_pt;
+	obj_pt.x = 0.0;
+	obj_pt.y = 0.0;
+	obj_pt.z = 0.0;
+	obj.polygon.points.push_back(obj_pt);
 
 	Eigen::Vector3i min_cut = md_.local_bound_min_;
 	Eigen::Vector3i max_cut = md_.local_bound_max_;
@@ -1046,8 +1046,8 @@ void SDFMap::publishMapInflate(bool all_info) {
 				if (pos(2) > mp_.visualization_truncate_height_) continue;
 				if (fabs(pos(2) - robot_height) < 0.000001 && pos(0) > 0 && pos(1) > 0) {
 					if (global_map.init_done) {
-            obj.polygon.points[0].x = pos(0);
-            obj.polygon.points[0].y = pos(1);
+						obj.polygon.points[0].x = pos(0);
+						obj.polygon.points[0].y = pos(1);
 						global_map.obstacles_arr.obstacles.push_back(obj);
 					}
 				}
@@ -1057,17 +1057,18 @@ void SDFMap::publishMapInflate(bool all_info) {
 				pt.z = pos(2);
 				cloud.push_back(pt);
 			}
-  
+
 	cloud.width = cloud.points.size();
 	cloud.height = 1;
 	cloud.is_dense = true;
 	cloud.header.frame_id = mp_.frame_id_;
 	sensor_msgs::PointCloud2 cloud_msg;
 
-  if (global_map.init_done) {
-    obstacle_pub_.publish(global_map.obstacles_arr);
-    global_map.obstacles_arr.obstacles.erase(global_map.end_global_map,global_map.obstacles_arr.obstacles.end());
-  }
+	if (global_map.init_done) {
+		obstacle_pub_.publish(global_map.obstacles_arr);
+		// global_map.obstacles_arr.obstacles.erase(global_map.end_global_map,global_map.obstacles_arr.obstacles.end());
+		global_map.obstacles_arr.obstacles.clear();
+	}
 	pcl::toROSMsg(cloud, cloud_msg);
 	map_inf_pub_.publish(cloud_msg);  //
 
