@@ -68,6 +68,7 @@ void FastPlannerManager::initPlanModules(ros::NodeHandle& nh) {
   if (use_kinodynamic_path) {
     kino_path_finder_.reset(new KinodynamicAstar);
     kino_path_finder_->setParam(nh);
+    kino_path_finder_->ros_init(nh);
     kino_path_finder_->setEnvironment(edt_environment_);
     kino_path_finder_->init();
   }

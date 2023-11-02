@@ -38,6 +38,21 @@ KinodynamicAstar::~KinodynamicAstar()
   }
 }
 
+void KinodynamicAstar::ros_init(ros::NodeHandle& nh) {
+  odom_sub_ = nh.subscribe("/odom_world", 1, &KinodynamicAstar::odometryCallback, this);
+
+}
+
+void KinodynamicAstar::odometryCallback(const nav_msgs::OdometryConstPtr& msg) {
+  odom_orient_.w() = msg->pose.pose.orientation.w;
+  odom_orient_.x() = msg->pose.pose.orientation.x;
+  odom_orient_.y() = msg->pose.pose.orientation.y;
+  odom_orient_.z() = msg->pose.pose.orientation.z;
+
+  cam_orient_Rot = odom_orient_.normalized().toRotationMatrix();
+  // std::cout << "rotationMatrix: \n" << cam_orient_Rot << std::endl;
+}
+
 int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, Eigen::Vector3d start_a,
                              Eigen::Vector3d end_pt, Eigen::Vector3d end_v, bool init, bool dynamic, double time_start)
 {
@@ -167,10 +182,16 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
       //       um << ax, ay, az;
       //       inputs.push_back(um);
       //     }
-      for (double ax = -0.8; ax <= 0.8 + 1e-3; ax += 0.8 * res)
-        for (double ay = -0.8; ay <= 0.8 + 1e-3; ay += 0.8 * res)
+
+      // 1. cam_pos_ facing angle
+      // 2. (new_ax, new_ay) = Rot_matrix * (ax, ay)
+      // 3. search planning in rotated coord (x:Real, |y| <= const)
+      // 4. um << Rot_matrix_inv * (acc_ax, acc_ay), 0.0
+      for (double ax = -2.0; ax <= 2.0 + 1e-3; ax += 2.0 * res)
+        for (double ay = -0.5; ay <= 0.5 + 1e-3; ay += 0.5 * res)
           {
             um << ax, ay, 0.0;
+            um = cam_orient_Rot.inverse() * um;
             inputs.push_back(um);
           }
       for (double tau = time_res * max_tau_; tau <= max_tau_; tau += time_res * max_tau_)
