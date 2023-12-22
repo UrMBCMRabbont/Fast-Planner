@@ -35,7 +35,7 @@
 #include <std_msgs/Int32.h>
 #include <vector>
 #include <visualization_msgs/Marker.h>
-
+#include <opencv2/opencv.hpp>
 #include <bspline_opt/bspline_optimizer.h>
 #include <path_searching/kinodynamic_astar.h>
 #include <plan_env/grid_map.h>
@@ -101,9 +101,9 @@ private:
 
   /* ROS utils */
   ros::NodeHandle node_;
-  ros::Timer exec_timer_, safety_timer_, vis_timer_, test_something_timer_,table_timer_;
-  ros::Subscriber waypoint_sub_, odom_sub_, global_map_sub_,table_seq_sub_;
-  ros::Publisher replan_pub_, new_pub_, bspline_pub_,tableDisplay_pub_, kino_fsm_pub_;
+  ros::Timer exec_timer_, safety_timer_, vis_timer_, map_timer_,table_timer_;
+  ros::Subscriber waypoint_sub_, odom_sub_,table_seq_sub_;
+  ros::Publisher replan_pub_, new_pub_, bspline_pub_,tableDisplay_pub_, kino_fsm_pub_,global_map_pub_;
 
   /* helper functions */
   bool callKinodynamicReplan();        // front-end and back-end method
@@ -118,6 +118,7 @@ private:
   void execFSMCallback(const ros::TimerEvent& e);
   void tableFSMCallback(const ros::TimerEvent& e);
   void checkCollisionCallback(const ros::TimerEvent& e);
+  void pubMapCallback(const ros::TimerEvent& e);
   void waypointCallback(const nav_msgs::PathConstPtr& msg);
   void addTableWaypoint(std::pair<float,float> pos);
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
