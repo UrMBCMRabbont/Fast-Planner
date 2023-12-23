@@ -937,7 +937,11 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
   vector<int>temp;
   temp = global_map.getObstclesIdx(md_.camera_pos_,mp_.local_update_range_);
   for(int i = 0;i<temp.size();i++){
-      setOccupied(global_map.IndexToPos(temp[i],md_.camera_pos_));
+        Eigen::Vector3d v = global_map.IndexToPos(temp[i],md_.camera_pos_);
+        for (int z = -inf_step_z; z <= inf_step_z; ++z) {
+          v(2) = z * mp_.resolution_;
+          setOccupied(v);
+        }
     }
 
   // if( md_.camera_pos_(0)>0 &&  md_.camera_pos_(1)>0){

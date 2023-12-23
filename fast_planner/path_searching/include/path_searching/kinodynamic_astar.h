@@ -5,6 +5,7 @@
 #include <ros/console.h>
 #include <ros/ros.h>
 #include <Eigen/Eigen>
+#include <nav_msgs/Path.h>
 #include <boost/functional/hash.hpp>
 #include <iostream>
 #include <map>
@@ -115,6 +116,8 @@ class KinodynamicAstar {
   /* ---------- record data ---------- */
   Eigen::Vector3d start_vel_, end_vel_, start_acc_;
   Eigen::Matrix<double, 6, 6> phi_;  // state transit matrix
+  Eigen::Matrix3d cam_orient_Rot;
+  Eigen::Quaterniond odom_orient_;
   // shared_ptr<SDFMap> sdf_map;
   EDTEnvironment::Ptr edt_environment_;
   bool is_shot_succ_ = false;
@@ -150,9 +153,16 @@ class KinodynamicAstar {
                            double& optimal_time);
 
   /* state propagation */
+  void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
   void stateTransit(Eigen::Matrix<double, 6, 1>& state0,
                     Eigen::Matrix<double, 6, 1>& state1, Eigen::Vector3d um,
                     double tau);
+  void stateTransit_z0(Eigen::Matrix<double, 6, 1>& state0,
+                    Eigen::Matrix<double, 6, 1>& state1, Eigen::Vector3d um,
+                    double tau);
+  /* ROS utils */
+  ros::Subscriber odom_sub_;
+
 
  public:
   KinodynamicAstar(){};
@@ -163,6 +173,7 @@ class KinodynamicAstar {
   /* main API */
   void setParam(ros::NodeHandle& nh);
   void init();
+  void ros_init(ros::NodeHandle& nh);
   void reset();
   int search(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel,
              Eigen::Vector3d start_acc, Eigen::Vector3d end_pt,

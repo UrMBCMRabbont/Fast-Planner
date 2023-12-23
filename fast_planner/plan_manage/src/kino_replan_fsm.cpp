@@ -477,6 +477,9 @@ bool KinoReplanFSM::callKinodynamicReplan() {
       pt.x = pos_pts(i, 0);
       pt.y = pos_pts(i, 1);
       pt.z = pos_pts(i, 2);
+      // while(std::abs(pt.z) > 1e-1){
+      //   std::cout << "ptz: " << pt.z << std::endl;
+      // }
       bspline.pos_pts.push_back(pt);
     }
 
