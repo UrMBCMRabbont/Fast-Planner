@@ -68,7 +68,8 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
     global_map.height =img.size().height;
     global_map.resolution = 0.05;
     //实际地图中某点坐标为(x,y)，对应栅格地图中坐标为[x*map.info.width+y]
-	  cv::normalize(img, img, 255, 0, cv::NORM_MINMAX);
+	  cv::normalize(img, img, 0, 255, cv::NORM_MINMAX);
+    cv::bitwise_not(img,img);
     global_map.mapData = (vector<int>)(img.reshape(1, 1));
     for (int i = 0; i <global_map.height; i++) {
       for (int j = 0; j < global_map.width; j++) {
@@ -250,7 +251,7 @@ void KinoReplanFSM::pubMapCallback(const ros::TimerEvent& e) {
     for (int j = 0; j < global_map.width; j++) {
       if(int(global_map.mapData[i * global_map.width + j]) >1){
         ROS_INFO("Map sending");
-        msg.data[i + j * msg.info.width] = 100;
+        msg.data[i * msg.info.width+ j ] = 100;
       }
     }
   }
