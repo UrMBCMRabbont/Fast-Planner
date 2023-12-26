@@ -132,6 +132,7 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
     pose_sub_.reset(
         new message_filters::Subscriber<geometry_msgs::PoseStamped>(node_, "/sdf_map/pose", 25));
 
+    // Laibon note: sync depth and pose topic
     sync_image_pose_.reset(new message_filters::Synchronizer<SyncPolicyImagePose>(
         SyncPolicyImagePose(100), *depth_sub_, *pose_sub_));
     sync_image_pose_->registerCallback(boost::bind(&SDFMap::depthPoseCallback, this, _1, _2));
@@ -151,7 +152,7 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
   indep_odom_sub_ =
       node_.subscribe<nav_msgs::Odometry>("/sdf_map/odom", 10, &SDFMap::odomCallback, this);
 
-  occ_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::updateOccupancyCallback, this);
+  occ_timer_ = node_.createTimer(ros::Duration(0.01), &SDFMap::updateOccupancyCallback, this);
   esdf_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::updateESDFCallback, this);
   vis_timer_ = node_.createTimer(ros::Duration(0.05), &SDFMap::visCallback, this);
 
@@ -754,7 +755,7 @@ void SDFMap::clearAndInflateLocalMap() {
   if (mp_.virtual_ceil_height_ > -0.5) {
     int ceil_id = floor((mp_.virtual_ceil_height_ - mp_.map_origin_(2)) * mp_.resolution_inv_);
     for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x){
-      for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y) {
+      for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y){
         md_.occupancy_buffer_inflate_[toAddress(x, y, ceil_id)] = 1;
         Eigen::Vector3d v(1.0*x, 1.0*y, 0.0);
         if(global_map.getInflateOccupancy(v,v)){
@@ -775,7 +776,7 @@ void SDFMap::visCallback(const ros::TimerEvent& /*event*/) {
   // publishDepth();
 }
 
-void SDFMap::updateOccupancyCallback(const ros::TimerEvent& /*event*/) {
+void SDFMap::updateOccupancyCallback(const ros::TimerEvent& _lai_event /*event*/) {
   if (!md_.occ_need_update_) return;
 
   /* update occupancy */
@@ -845,6 +846,7 @@ void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
     md_.has_odom_ = true;
     md_.update_num_ += 1;
     md_.occ_need_update_ = true;
+    if(md_.occ_need_update_){ ROS_INFO("UPDATE OCC Map"); }
   } else {
     md_.occ_need_update_ = false;
   }
