@@ -297,7 +297,6 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
   }
 }
 
-
 void KinoReplanFSM::checkCollisionCallback(const ros::TimerEvent& e) {
   LocalTrajData* info = &planner_manager_->local_data_;
 
