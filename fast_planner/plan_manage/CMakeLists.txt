@@ -50,8 +50,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
+find_package( OpenCV REQUIRED )
 
 add_executable(fast_planner_node
   src/fast_planner_node.cpp 
@@ -61,6 +63,7 @@ add_executable(fast_planner_node
   )
 target_link_libraries(fast_planner_node 
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   )
 
 add_executable(traj_server src/traj_server.cpp)

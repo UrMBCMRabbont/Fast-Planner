@@ -29,6 +29,10 @@
 namespace fast_planner {
 
 void KinoReplanFSM::init(ros::NodeHandle& nh) {
+
+  std::string file_directory;
+  std::string file_name;
+  std::string pgm_file;
   current_wp_  = 0;
   exec_state_  = FSM_EXEC_STATE::INIT;
   have_target_ = false;
@@ -45,7 +49,41 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
     nh.param("fsm/waypoint" + to_string(i) + "_y", waypoints_[i][1], -1.0);
     nh.param("fsm/waypoint" + to_string(i) + "_z", waypoints_[i][2], -1.0);
   }
-
+  nh.param("file_directory", file_directory, std::string("/home/linuxlaitang/ORB_SLAM3/map/"));
+  nh.param("file_name", file_name, std::string("map"));
+  pgm_file = file_directory + file_name + ".pgm";
+  cv::Mat img = cv::imread(pgm_file, 0); 
+  //设置栅格地图大小
+	if (img.empty())
+	{
+		ROS_INFO("NULL");
+	}
+  else
+  {
+    global_map.width =img.size().width;
+    global_map.height =img.size().height;
+    global_map.resolution = 0.05;
+    //实际地图中某点坐标为(x,y)，对应栅格地图中坐标为[x*map.info.width+y]
+	  cv::normalize(img, img, 0, 255, cv::NORM_MINMAX);
+    cv::bitwise_not(img,img);
+    global_map.mapData = (vector<int>)(img.reshape(1, 1));
+    for (int i = 0; i <global_map.height; i++) {
+      for (int j = 0; j < global_map.width; j++) {
+        int pix_value = int(global_map.mapData[i * global_map.width + j]);
+        if(pix_value != 49){       // border value
+          std::cout << "pix value: " << pix_value << std::endl;
+        }
+        if(pix_value == 255){      // border value
+          ROS_INFO("Map ok");
+          global_map.mapData[i * global_map.width+j] = 100;
+          global_map.obstacle_idx.push_back(i * global_map.width + j);
+        } else {
+          global_map.mapData[i * global_map.width+j] = 0;
+        }
+      }
+    }
+    global_map.init_done = 1;
+  }
   /* initialize main modules */
   planner_manager_.reset(new FastPlannerManager);
   planner_manager_->initPlanModules(nh);
@@ -54,14 +92,15 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   /* callback */
   exec_timer_   = nh.createTimer(ros::Duration(0.01), &KinoReplanFSM::execFSMCallback, this);
   table_timer_   = nh.createTimer(ros::Duration(0.01), &KinoReplanFSM::tableFSMCallback, this);
+  map_timer_ = nh.createTimer(ros::Duration(10.0), &KinoReplanFSM::pubMapCallback, this);
   safety_timer_ = nh.createTimer(ros::Duration(0.05), &KinoReplanFSM::checkCollisionCallback, this);
 
   waypoint_sub_ =
       nh.subscribe("/waypoint_generator/waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("/odom_world", 1, &KinoReplanFSM::odometryCallback, this);
-  global_map_sub_ = nh.subscribe("/map", 1, &KinoReplanFSM::MapCallback, this); //Amber
   table_seq_sub_ = nh.subscribe("/table_seq", 1, &KinoReplanFSM::table_callback, this);
 
+  global_map_pub_ = nh.advertise<nav_msgs::OccupancyGrid>("/map", 10); //Amber
   replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 10);
   tableDisplay_pub_  = nh.advertise<visualization_msgs::Marker>("/table_display_point", 10);
   new_pub_     = nh.advertise<std_msgs::Empty>("/planning/new", 10);
@@ -151,9 +190,9 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 }
 
 void KinoReplanFSM::publishExecState(int exec_state_) {
-    std_msgs::Int32 msg;
-    msg.data = int(exec_state_);
-    kino_fsm_pub_.publish(msg);
+  std_msgs::Int32 msg;
+  msg.data = int(exec_state_);
+  kino_fsm_pub_.publish(msg);
 }
 
 void KinoReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call) {
@@ -187,6 +226,42 @@ void KinoReplanFSM::tableFSMCallback(const ros::TimerEvent& e) {
     addTableWaypoint(global_map.table_seq[0]);
     global_map.table_seq.erase(global_map.table_seq.begin());
   }
+}
+void KinoReplanFSM::pubMapCallback(const ros::TimerEvent& e) {
+  nav_msgs::OccupancyGrid msg;
+  msg.header.seq = 0;
+  msg.header.stamp = ros::Time::now();
+  msg.header.frame_id = "map";
+
+  msg.info.map_load_time = ros::Time::now();
+  msg.info.resolution = 0.05;
+
+
+  // origin的确定
+  msg.info.origin.position.x = 0.0;
+  msg.info.origin.position.y = 0.0;
+  msg.info.origin.position.z = 0.0;
+  msg.info.origin.orientation.x = 0.0;
+  msg.info.origin.orientation.y = 0.0;
+  msg.info.origin.orientation.z = 0.0;
+  msg.info.origin.orientation.w = 1.0;
+  msg.info.width = global_map.width;
+  msg.info.height = global_map.height;
+  msg.data.resize(msg.info.width * msg.info.height);
+  msg.data.assign(msg.info.width * msg.info.height, 0);
+  ROS_INFO("data size = %d\n", msg.data.size());
+  for (int i = 0; i < global_map.height; i++) {
+    for (int j = 0; j < global_map.width; j++) {
+      int pix_value = int(global_map.mapData[i * global_map.width + j]);
+      // if(pix_value == 255){      // border value
+      //   ROS_INFO("Map sending");
+      //   msg.data[i * msg.info.width+ j] = 100;
+      // }
+      msg.data[i * msg.info.width+ j] = pix_value;
+    }
+  }
+
+  global_map_pub_.publish(msg);
 }
 void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
   static int fsm_num = 0;
@@ -406,6 +481,9 @@ bool KinoReplanFSM::callKinodynamicReplan() {
       pt.x = pos_pts(i, 0);
       pt.y = pos_pts(i, 1);
       pt.z = pos_pts(i, 2);
+      // while(std::abs(pt.z) > 1e-1){
+      //   std::cout << "ptz: " << pt.z << std::endl;
+      // }
       bspline.pos_pts.push_back(pt);
     }
 

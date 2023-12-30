@@ -39,6 +39,10 @@
 
     <!-- replanning method -->
     <param name="planner_node/planner" value="1" type="int"/>
+    <!-- 存放pcd文件的路径-->
+    <param name="file_directory" value= "/home/linuxlaitang/ORB_SLAM3/map/" />
+    <!-- pcd文件名称-->
+    <param name="file_name" value= "map" />
 
     <!-- planning fsm -->
     <param name="fsm/flight_type" value="$(arg flight_type)" type="int"/>
