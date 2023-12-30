@@ -50,14 +50,10 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
     nh.param("fsm/waypoint" + to_string(i) + "_z", waypoints_[i][2], -1.0);
   }
   nh.param("file_directory", file_directory, std::string("/home/linuxlaitang/ORB_SLAM3/map/"));
-
   nh.param("file_name", file_name, std::string("map"));
-
   pgm_file = file_directory + file_name + ".pgm";
-
   cv::Mat img = cv::imread(pgm_file, 0); 
   //设置栅格地图大小
-  
 	if (img.empty())
 	{
 		ROS_INFO("NULL");
@@ -73,9 +69,16 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
     global_map.mapData = (vector<int>)(img.reshape(1, 1));
     for (int i = 0; i <global_map.height; i++) {
       for (int j = 0; j < global_map.width; j++) {
-        if(int(global_map.mapData[i * global_map.width + j]) >1){
+        int pix_value = int(global_map.mapData[i * global_map.width + j]);
+        if(pix_value != 49){       // border value
+          std::cout << "pix value: " << pix_value << std::endl;
+        }
+        if(pix_value == 255){      // border value
           ROS_INFO("Map ok");
+          global_map.mapData[i * global_map.width+j] = 100;
           global_map.obstacle_idx.push_back(i * global_map.width + j);
+        } else {
+          global_map.mapData[i * global_map.width+j] = 0;
         }
       }
     }
@@ -187,9 +190,9 @@ void KinoReplanFSM::MapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg) {
 }
 
 void KinoReplanFSM::publishExecState(int exec_state_) {
-    std_msgs::Int32 msg;
-    msg.data = int(exec_state_);
-    kino_fsm_pub_.publish(msg);
+  std_msgs::Int32 msg;
+  msg.data = int(exec_state_);
+  kino_fsm_pub_.publish(msg);
 }
 
 void KinoReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call) {
@@ -247,12 +250,14 @@ void KinoReplanFSM::pubMapCallback(const ros::TimerEvent& e) {
   msg.data.resize(msg.info.width * msg.info.height);
   msg.data.assign(msg.info.width * msg.info.height, 0);
   ROS_INFO("data size = %d\n", msg.data.size());
-  for (int i = 0; i <global_map.height; i++) {
+  for (int i = 0; i < global_map.height; i++) {
     for (int j = 0; j < global_map.width; j++) {
-      if(int(global_map.mapData[i * global_map.width + j]) >1){
-        ROS_INFO("Map sending");
-        msg.data[i * msg.info.width+ j ] = 100;
-      }
+      int pix_value = int(global_map.mapData[i * global_map.width + j]);
+      // if(pix_value == 255){      // border value
+      //   ROS_INFO("Map sending");
+      //   msg.data[i * msg.info.width+ j] = 100;
+      // }
+      msg.data[i * msg.info.width+ j] = pix_value;
     }
   }
 
