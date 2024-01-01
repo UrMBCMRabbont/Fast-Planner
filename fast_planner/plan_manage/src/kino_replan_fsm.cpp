@@ -25,7 +25,15 @@
 
 
 #include <plan_manage/kino_replan_fsm.h>
-
+cv::Mat rotate(cv::Mat src, double angle)   //rotate function returning mat object with parametres imagefile and angle    
+{
+    cv::Mat dst;      //cv::Mat object for output image file
+    cv::Point2f pt(src.cols/2., src.rows/2.);          //point from where to rotate    
+    cv::Mat r = getRotationMatrix2D(pt, angle, 1.0);      //Mat object for storing after rotation
+    warpAffine(src, dst, r, cv::Size(src.cols, src.rows));  ///applie an affine transforation to image.
+    return dst;         //returning Mat object for output image file
+}
+ 
 namespace fast_planner {
 
 void KinoReplanFSM::init(ros::NodeHandle& nh) {
@@ -65,6 +73,9 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
     global_map.resolution = 0.05;
     //实际地图中某点坐标为(x,y)，对应栅格地图中坐标为[x*map.info.width+y]
 	  cv::normalize(img, img, 0, 255, cv::NORM_MINMAX);
+
+    img = rotate(img, -90);
+	  cv::flip(img, img, 1);
     cv::bitwise_not(img,img);
     global_map.mapData = (vector<int>)(img.reshape(1, 1));
     for (int i = 0; i <global_map.height; i++) {

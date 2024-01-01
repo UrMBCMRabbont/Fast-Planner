@@ -126,7 +126,7 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
 
   /* init callback */
 
-  depth_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(node_, "/sdf_map/depth", 50));
+  depth_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(node_, "/sdf_map/depth", 50));//AMber
 
   if (mp_.pose_type_ == POSE_STAMPED) {
     pose_sub_.reset(
@@ -647,13 +647,13 @@ Eigen::Vector3d SDFMap::closetPointInMap(const Eigen::Vector3d& pt, const Eigen:
   return camera_pt + (min_t - 1e-3) * diff;
 }
 
-void SDFMap::clearAndInflateLocalMap() {
+void SDFMap::clearAndInflateLocalMap() { //Amber
   /*clear outside local*/
   const int vec_margin = 5;
   // Eigen::Vector3i min_vec_margin = min_vec - Eigen::Vector3i(vec_margin,
   // vec_margin, vec_margin); Eigen::Vector3i max_vec_margin = max_vec +
   // Eigen::Vector3i(vec_margin, vec_margin, vec_margin);
-
+  ROS_INFO("This is running567777");
   Eigen::Vector3i min_cut = md_.local_bound_min_ -
       Eigen::Vector3i(mp_.local_map_margin_, mp_.local_map_margin_, mp_.local_map_margin_);
   Eigen::Vector3i max_cut = md_.local_bound_max_ +
@@ -728,7 +728,7 @@ void SDFMap::clearAndInflateLocalMap() {
   for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x)
     for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y)
       for (int z = md_.local_bound_min_(2); z <= md_.local_bound_max_(2); ++z) {
-        md_.occupancy_buffer_inflate_[toAddress(x, y, z)] = 0;
+        // md_.occupancy_buffer_inflate_[toAddress(x, y, z)] = 0;
       }
 
   // inflate obstacles
@@ -746,22 +746,33 @@ void SDFMap::clearAndInflateLocalMap() {
                 idx_inf >= mp_.map_voxel_num_(0) * mp_.map_voxel_num_(1) * mp_.map_voxel_num_(2)) {
               continue;
             }
-            md_.occupancy_buffer_inflate_[idx_inf] = 1;//added
+            // md_.occupancy_buffer_inflate_[idx_inf] = 1;//added
           }
         }
       }
-
   // add virtual ceiling to limit flight height
   if (mp_.virtual_ceil_height_ > -0.5) {
     int ceil_id = floor((mp_.virtual_ceil_height_ - mp_.map_origin_(2)) * mp_.resolution_inv_);
     for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x){
       for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y){
-        md_.occupancy_buffer_inflate_[toAddress(x, y, ceil_id)] = 1;
-        Eigen::Vector3d v(1.0*x, 1.0*y, 0.0);
-        if(global_map.getInflateOccupancy(v,v)){
-          setOccupied(v);
-        }
+        // md_.occupancy_buffer_inflate_[toAddress(x, y, ceil_id)] = 1;
       }
+    }
+  }
+
+  ROS_INFO("Thissss also runingg");
+  vector<int>temp;
+  int inf_step_z = 1;
+  temp = global_map.getObstclesIdx(Eigen::Vector3d(0,0,0),Eigen::Vector3d(14,14,0));
+  int mx,my;
+  for(int i=0; i<temp.size(); i++){
+    Eigen::Vector3d v = global_map.IndexToPos(temp[i],md_.camera_pos_);
+    for (int z = md_.local_bound_min_(2); z <= md_.local_bound_max_(2); ++z) {
+      v(2) = z * mp_.resolution_;
+      setOccupied(v);
+      mx = v(0)/mp_.resolution_;
+      my = v(1)/mp_.resolution_;
+      md_.occupancy_buffer_inflate_[toAddress(mx,my,z)] = 1;
     }
   }
 }
@@ -777,6 +788,7 @@ void SDFMap::visCallback(const ros::TimerEvent& /*event*/) {
 }
 
 void SDFMap::updateOccupancyCallback(const ros::TimerEvent& _lai_event /*event*/) {
+  // ROS_INFO("slsssss");
   if (!md_.occ_need_update_) return;
 
   /* update occupancy */
@@ -785,7 +797,8 @@ void SDFMap::updateOccupancyCallback(const ros::TimerEvent& _lai_event /*event*/
 
   projectDepthImage();
   raycastProcess();
-
+  ROS_INFO("THIS IS RUnning: %d", md_.local_updated_);
+  // clearAndInflateLocalMap();
   if (md_.local_updated_) clearAndInflateLocalMap();
 
   t2 = ros::Time::now();
@@ -825,6 +838,7 @@ void SDFMap::updateESDFCallback(const ros::TimerEvent& /*event*/) {
 
 void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
                                const geometry_msgs::PoseStampedConstPtr& pose) {
+  ROS_INFO("Why u so shit?");
   /* get depth image */
   cv_bridge::CvImagePtr cv_ptr;
   cv_ptr = cv_bridge::toCvCopy(img, img->encoding);
@@ -835,13 +849,13 @@ void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
   cv_ptr->image.copyTo(md_.depth_image_);
 
   // std::cout << "depth: " << md_.depth_image_.cols << ", " << md_.depth_image_.rows << std::endl;
-
   /* get pose */
   md_.camera_pos_(0) = pose->pose.position.x;
   md_.camera_pos_(1) = pose->pose.position.y;
   md_.camera_pos_(2) = pose->pose.position.z;
   md_.camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
                                      pose->pose.orientation.y, pose->pose.orientation.z);
+  ROS_INFO("Amber is on9 %f %f %f",md_.camera_pos_(0),md_.camera_pos_(1),md_.camera_pos_(2));
   if (isInMap(md_.camera_pos_)) {
     md_.has_odom_ = true;
     md_.update_num_ += 1;
@@ -863,7 +877,7 @@ void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& odom) {
 }
 
 void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
-
+  ROS_INFO("This is alos why u shit");
   pcl::PointCloud<pcl::PointXYZ> latest_cloud;
   pcl::fromROSMsg(*img, latest_cloud);
 
@@ -939,12 +953,12 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
   vector<int>temp;
   temp = global_map.getObstclesIdx(md_.camera_pos_,mp_.local_update_range_);
   for(int i = 0;i<temp.size();i++){
-        Eigen::Vector3d v = global_map.IndexToPos(temp[i],md_.camera_pos_);
-        for (int z = -inf_step_z; z <= inf_step_z; ++z) {
-          v(2) = z * mp_.resolution_;
-          setOccupied(v);
-        }
+    Eigen::Vector3d v = global_map.IndexToPos(temp[i],md_.camera_pos_);
+    for (int z = -inf_step_z; z <= inf_step_z; ++z) {
+      v(2) = z * mp_.resolution_;
+      setOccupied(v);
     }
+  }
 
   // if( md_.camera_pos_(0)>0 &&  md_.camera_pos_(1)>0){
   // for (float i = -mp_.local_update_range_(0)/2; i < mp_.local_update_range_(0)/2; i+=mp_.resolution_){
@@ -1325,7 +1339,7 @@ void SDFMap::depthOdomCallback(const sensor_msgs::ImageConstPtr& img,
     (cv_ptr->image).convertTo(cv_ptr->image, CV_16UC1, mp_.k_depth_scaling_factor_);
   }
   cv_ptr->image.copyTo(md_.depth_image_);
-
+  ROS_INFO("Depth callback");
   md_.occ_need_update_ = true;
 }
 

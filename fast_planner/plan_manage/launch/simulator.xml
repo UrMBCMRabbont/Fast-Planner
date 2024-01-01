@@ -17,7 +17,7 @@
     <param name="map/x_size"     value="$(arg map_size_x_)" />
     <param name="map/y_size"     value="$(arg map_size_y_)" />
     <param name="map/z_size"     value="$(arg map_size_z_)" />
-    <param name="map/resolution" value="0.1"/>        
+    <param name="map/resolution" value="0.05"/>        
 
     <param name="ObstacleShape/seed" value="-1"/>
     <param name="map/obs_num"    value="$(arg p_num)"/>

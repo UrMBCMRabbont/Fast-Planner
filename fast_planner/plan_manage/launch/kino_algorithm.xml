@@ -60,7 +60,7 @@
     <param name="fsm/waypoint2_y" value="$(arg point2_y)" type="double"/>
     <param name="fsm/waypoint2_z" value="$(arg point2_z)" type="double"/>
 
-    <param name="sdf_map/resolution"      value="0.1" /> 
+    <param name="sdf_map/resolution"      value="0.05" /> 
     <param name="sdf_map/map_size_x"   value="$(arg map_size_x_)" /> 
     <param name="sdf_map/map_size_y"   value="$(arg map_size_y_)" /> 
     <param name="sdf_map/map_size_z"   value="$(arg map_size_z_)" /> 
