@@ -59,6 +59,10 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   }
   nh.param("file_directory", file_directory, std::string("/home/linuxlaitang/ORB_SLAM3/map/"));
   nh.param("file_name", file_name, std::string("map"));
+  double x,y;
+  nh.param("global_map/origin_x", global_map.origin_x, -9.0);
+  nh.param("global_map/origin_y", global_map.origin_y, 3.0);
+
   pgm_file = file_directory + file_name + ".pgm";
   cv::Mat img = cv::imread(pgm_file, 0); 
   //设置栅格地图大小

@@ -728,7 +728,7 @@ void SDFMap::clearAndInflateLocalMap() { //Amber
   for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x)
     for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y)
       for (int z = md_.local_bound_min_(2); z <= md_.local_bound_max_(2); ++z) {
-        // md_.occupancy_buffer_inflate_[toAddress(x, y, z)] = 0;
+        md_.occupancy_buffer_inflate_[toAddress(x, y, z)] = 0;
       }
 
   // inflate obstacles
@@ -746,7 +746,7 @@ void SDFMap::clearAndInflateLocalMap() { //Amber
                 idx_inf >= mp_.map_voxel_num_(0) * mp_.map_voxel_num_(1) * mp_.map_voxel_num_(2)) {
               continue;
             }
-            // md_.occupancy_buffer_inflate_[idx_inf] = 1;//added
+            md_.occupancy_buffer_inflate_[idx_inf] = 1;//added
           }
         }
       }
@@ -755,7 +755,7 @@ void SDFMap::clearAndInflateLocalMap() { //Amber
     int ceil_id = floor((mp_.virtual_ceil_height_ - mp_.map_origin_(2)) * mp_.resolution_inv_);
     for (int x = md_.local_bound_min_(0); x <= md_.local_bound_max_(0); ++x){
       for (int y = md_.local_bound_min_(1); y <= md_.local_bound_max_(1); ++y){
-        // md_.occupancy_buffer_inflate_[toAddress(x, y, ceil_id)] = 1;
+        md_.occupancy_buffer_inflate_[toAddress(x, y, ceil_id)] = 1;
       }
     }
   }

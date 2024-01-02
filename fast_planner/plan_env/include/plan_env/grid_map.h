@@ -18,7 +18,8 @@
 class GridMap{
 public:
     int width, height, init_done = 0;
-    float resolution, origin_x, origin_y;
+    float resolution;
+    double origin_x, origin_y;
     std::vector<int> mapData;
     std::vector<int> obstacle_idx;
     std::vector<std::pair<float,float>> table_seq;
@@ -57,8 +58,8 @@ inline std::vector<int> GridMap::WorldToMap(double wx, double wy, Eigen::Vector3
 	}
 	// int my = int((1.0 * (wx - float(origin_x))) / resolution);
 	// int mx = int((1.0 * (wy - float(origin_y))) / resolution);
-	int my = int((1.0 * (wx)) / resolution);
-	int mx = int((1.0 * (wy)) / resolution);
+	int my = int((1.0 * (wx+origin_y)) / resolution);
+	int mx = int((1.0 * (wy+origin_x)) / resolution);
 	// int my = int((1.0 * (wx)) );
 	// int mx = int((1.0 * (wy)) );
 	//ROS_INFO("\nPOS_after_clac:\nx:%d y:%d\n [%f,%f]",mx,my,origin_x,origin_y);
@@ -97,8 +98,8 @@ inline int GridMap::posToIndex(Eigen::Vector3d pos, Eigen::Vector3d offset_){
 }
 inline Eigen::Vector3d GridMap::IndexToPos(int idx,Eigen::Vector3d cam_pos){
     Eigen::Vector3d pos;
-    pos(1) = (1.0*(idx/width))*resolution;
-    pos(0) = (1.0*(idx%width))*resolution;
+    pos(1) = (1.0*(idx/width))*resolution+origin_y;
+    pos(0) = (1.0*(idx%width))*resolution+origin_x;
     pos(2) = 0;
 
 	return pos;
@@ -111,8 +112,8 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
     temp.clear();
     Eigen::Vector3d grid;
     //smallest grid idx
-    grid(0) = GENERIC_MAX(pos(0)-offset_(0), 0);
-    grid(1) = GENERIC_MAX(pos(1)-offset_(1), 0);
+    grid(0) = GENERIC_MAX(pos(0)-offset_(0), origin_x);
+    grid(1) = GENERIC_MAX(pos(1)-offset_(1), origin_y);
     if(!posToIndex(grid,grid)){
         ROS_INFO("You shit at min: %f %f\n",grid(0), grid(1));
         return temp;
