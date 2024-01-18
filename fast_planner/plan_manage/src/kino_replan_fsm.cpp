@@ -130,7 +130,7 @@ void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
   trigger_ = true;
 
   if (target_type_ == TARGET_TYPE::MANUAL_TARGET) {
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
+    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 0.0;
 
   } else if (target_type_ == TARGET_TYPE::PRESET_TARGET) {
     end_pt_(0)  = waypoints_[current_wp_][0];
@@ -225,8 +225,8 @@ void KinoReplanFSM::printFSMExecState() {
 void KinoReplanFSM::table_callback(const nav_msgs::PathConstPtr& tablepos_msg){
     std::pair<float,float> table_pos;
     for (int i=0;i<tablepos_msg->poses.size();i++) {
-        table_pos.first = tablepos_msg->poses[i].pose.position.x;
-        table_pos.second = tablepos_msg->poses[i].pose.position.y;
+        table_pos.first = tablepos_msg->poses[i].pose.position.x - global_map.origin_x;
+        table_pos.second = tablepos_msg->poses[i].pose.position.y - global_map.origin_y-15.0;
         global_map.table_seq.push_back(table_pos);
         ROS_INFO("Table_Pos: %f %f\n",table_pos.first,table_pos.second);
     }
@@ -466,7 +466,7 @@ void KinoReplanFSM::checkCollisionCallback(const ros::TimerEvent& e) {
 }
 
 bool KinoReplanFSM::callKinodynamicReplan() {
-      // set z=0.0 plane
+      // laibon set z=0.0 plane
       start_pt_[2] = 0.0;
       start_vel_[2] = 0.0;
       start_acc_[2] = 0.0;
@@ -496,9 +496,6 @@ bool KinoReplanFSM::callKinodynamicReplan() {
       pt.x = pos_pts(i, 0);
       pt.y = pos_pts(i, 1);
       pt.z = pos_pts(i, 2);
-      // while(std::abs(pt.z) > 1e-1){
-      //   std::cout << "ptz: " << pt.z << std::endl;
-      // }
       bspline.pos_pts.push_back(pt);
     }
 
