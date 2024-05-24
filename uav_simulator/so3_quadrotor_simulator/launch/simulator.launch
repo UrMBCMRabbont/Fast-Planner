@@ -10,7 +10,7 @@
      <param name="simulator/init_state_y" value=" 0.0"/>
      <param name="simulator/init_state_z" value=" 3"/>
      <remap from="~odom" to="/visual_slam/odom"/>
-     <remap from="~cmd" to="so3_cmd"/>
+     <remap from="~cmd" to="cmd_vel"/>
      <remap from="~imu" to="sim/imu"/>
      <remap from="~force_disturbance" to="force_disturbance"/>    
      <remap from="~moment_disturbance" to="moment_disturbance"/>        
@@ -27,7 +27,7 @@
      <remap from="~position_cmd" to="position_cmd"/>
      <remap from="~motors" to="motors"/>
      <remap from="~corrections" to="corrections"/>
-     <remap from="~so3_cmd" to="so3_cmd"/>
+     <remap from="~cmd_vel" to="cmd_vel"/>
      <remap from="~imu" to="sim/imu"/>
      <rosparam file="$(find so3_control)/config/gains_hummingbird.yaml"/>
      <rosparam file="$(find so3_control)/config/corrections_hummingbird.yaml"/>

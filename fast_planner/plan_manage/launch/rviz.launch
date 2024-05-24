@@ -1,3 +1,5 @@
 <launch>
   <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find plan_manage)/config/traj.rviz" />
+  <node pkg="tf" type="static_transform_publisher" name="map_to_world" args="10.0 12.5 0.0 0 0 0.0 /map /world 0"/>
+  <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_world" args="10.0 10.5 0.0 0 0 0.0 /map /world 0"/> -->
 </launch>

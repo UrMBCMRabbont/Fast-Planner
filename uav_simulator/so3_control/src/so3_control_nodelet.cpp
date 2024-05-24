@@ -199,6 +199,7 @@ SO3ControlNodelet::onInit(void)
   n.param("corrections/p", corrections_[2], 0.0);
 
   so3_command_pub_ = n.advertise<quadrotor_msgs::SO3Command>("so3_cmd", 10);
+  // so3_command_pub_ = n.advertise<geometry_msgs::Twist>("so3_cmd", 10);
 
   odom_sub_ = n.subscribe("odom", 10, &SO3ControlNodelet::odom_callback, this,
                           ros::TransportHints().tcpNoDelay());

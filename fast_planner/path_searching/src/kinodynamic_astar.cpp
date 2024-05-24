@@ -187,8 +187,8 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
       // 2. (new_ax, new_ay) = Rot_matrix * (ax, ay)
       // 3. search planning in rotated coord (x:Real, |y| <= const)
       // 4. um << Rot_matrix_inv * (acc_ax, acc_ay), 0.0
-      for (double ax = -2.0; ax <= 2.0 + 1e-3; ax += 2.0 * res)
-        for (double ay = -0.5; ay <= 0.5 + 1e-3; ay += 0.5 * res)
+      for (double ax = -0.8; ax <= 0.8 + 1e-3; ax += 0.8 * res)
+        for (double ay = -0.11; ay <= 0.11 + 1e-3; ay += 0.11 * res)
           {
             um << ax, ay, 0.0;
             um = cam_orient_Rot.inverse() * um;
@@ -248,7 +248,8 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
           double dt = tau * double(k) / double(check_num_);
           stateTransit_z0(cur_state, xt, um, dt);
           pos = xt.head(3);
-          if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 || global_map.getInflateOccupancy(pos, edt_environment_->sdf_map_->getOrigin()) == 1)
+          // if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 || global_map.getInflateOccupancy(pos, edt_environment_->sdf_map_->getOrigin()) == 1)
+          if (edt_environment_->sdf_map_->getInflateOccupancy(pos) == 1 )
           {
             is_occ = true;
             break;

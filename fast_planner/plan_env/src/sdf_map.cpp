@@ -653,7 +653,7 @@ void SDFMap::clearAndInflateLocalMap() { //Amber
   // Eigen::Vector3i min_vec_margin = min_vec - Eigen::Vector3i(vec_margin,
   // vec_margin, vec_margin); Eigen::Vector3i max_vec_margin = max_vec +
   // Eigen::Vector3i(vec_margin, vec_margin, vec_margin);
-  ROS_INFO("This is running567777");
+  // ROS_INFO("This is running567777");
   Eigen::Vector3i min_cut = md_.local_bound_min_ -
       Eigen::Vector3i(mp_.local_map_margin_, mp_.local_map_margin_, mp_.local_map_margin_);
   Eigen::Vector3i max_cut = md_.local_bound_max_ +
@@ -760,7 +760,7 @@ void SDFMap::clearAndInflateLocalMap() { //Amber
     }
   }
 
-  ROS_INFO("Thissss also runingg");
+  // ROS_INFO("Thissss also runingg");
   vector<int>temp;
   int inf_step_z = 1;
   temp = global_map.getObstclesIdx(Eigen::Vector3d(0,0,0),Eigen::Vector3d(14,14,0));
@@ -770,9 +770,10 @@ void SDFMap::clearAndInflateLocalMap() { //Amber
     for (int z = md_.local_bound_min_(2); z <= md_.local_bound_max_(2); ++z) {
       v(2) = z * mp_.resolution_;
       setOccupied(v);
+      // laibon
       mx = v(0)/mp_.resolution_;
       my = v(1)/mp_.resolution_;
-      md_.occupancy_buffer_inflate_[toAddress(mx,my,z)] = 1;
+      // md_.occupancy_buffer_inflate_[toAddress(mx,my,z)] = 1;
     }
   }
 }
@@ -797,7 +798,7 @@ void SDFMap::updateOccupancyCallback(const ros::TimerEvent& _lai_event /*event*/
 
   projectDepthImage();
   raycastProcess();
-  ROS_INFO("THIS IS RUnning: %d", md_.local_updated_);
+  // ROS_INFO("THIS IS RUnning: %d", md_.local_updated_);
   // clearAndInflateLocalMap();
   if (md_.local_updated_) clearAndInflateLocalMap();
 
@@ -838,7 +839,7 @@ void SDFMap::updateESDFCallback(const ros::TimerEvent& /*event*/) {
 
 void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
                                const geometry_msgs::PoseStampedConstPtr& pose) {
-  ROS_INFO("Why u so shit?");
+  // ROS_INFO("Why u so shit?");
   /* get depth image */
   cv_bridge::CvImagePtr cv_ptr;
   cv_ptr = cv_bridge::toCvCopy(img, img->encoding);
@@ -855,12 +856,13 @@ void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
   md_.camera_pos_(2) = pose->pose.position.z;
   md_.camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
                                      pose->pose.orientation.y, pose->pose.orientation.z);
-  ROS_INFO("Amber is on9 %f %f %f",md_.camera_pos_(0),md_.camera_pos_(1),md_.camera_pos_(2));
+  // ROS_INFO("Amber is on9 %f %f %f",md_.camera_pos_(0),md_.camera_pos_(1),md_.camera_pos_(2));
   if (isInMap(md_.camera_pos_)) {
     md_.has_odom_ = true;
     md_.update_num_ += 1;
     md_.occ_need_update_ = true;
-    if(md_.occ_need_update_){ ROS_INFO("UPDATE OCC Map"); }
+    // if(md_.occ_need_update_){ 
+    //   ROS_INFO("UPDATE OCC Map"); }
   } else {
     md_.occ_need_update_ = false;
   }
@@ -877,7 +879,6 @@ void SDFMap::odomCallback(const nav_msgs::OdometryConstPtr& odom) {
 }
 
 void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
-  ROS_INFO("This is alos why u shit");
   pcl::PointCloud<pcl::PointXYZ> latest_cloud;
   pcl::fromROSMsg(*img, latest_cloud);
 
@@ -957,6 +958,7 @@ void SDFMap::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img) {
     for (int z = -inf_step_z; z <= inf_step_z; ++z) {
       v(2) = z * mp_.resolution_;
       setOccupied(v);
+      // laibon
     }
   }
 

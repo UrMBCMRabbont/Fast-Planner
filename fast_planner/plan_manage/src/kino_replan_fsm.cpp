@@ -62,6 +62,7 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   double x,y;
   nh.param("global_map/origin_x", global_map.origin_x, -9.0);
   nh.param("global_map/origin_y", global_map.origin_y, 3.0);
+  // nh.param("global_map/origin_y", global_map.origin_y, 3.0);
 
   pgm_file = file_directory + file_name + ".pgm";
   cv::Mat img = cv::imread(pgm_file, 0); 
@@ -86,13 +87,14 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
       for (int j = 0; j < global_map.width; j++) {
         int pix_value = int(global_map.mapData[i * global_map.width + j]);
         if(pix_value != 49){       // border value
-          std::cout << "pix value: " << pix_value << std::endl;
+          // std::cout << "pix value: " << pix_value << std::endl;
         }
         if(pix_value == 255){      // border value
-          ROS_INFO("Map ok");
+          // ROS_INFO("Map ok");
           global_map.mapData[i * global_map.width+j] = 100;
           global_map.obstacle_idx.push_back(i * global_map.width + j);
-        } else {
+        } 
+        else {
           global_map.mapData[i * global_map.width+j] = 0;
         }
       }
@@ -130,7 +132,8 @@ void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
   trigger_ = true;
 
   if (target_type_ == TARGET_TYPE::MANUAL_TARGET) {
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
+    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 0.0;
+    // laibon
 
   } else if (target_type_ == TARGET_TYPE::PRESET_TARGET) {
     end_pt_(0)  = waypoints_[current_wp_][0];
@@ -225,8 +228,8 @@ void KinoReplanFSM::printFSMExecState() {
 void KinoReplanFSM::table_callback(const nav_msgs::PathConstPtr& tablepos_msg){
     std::pair<float,float> table_pos;
     for (int i=0;i<tablepos_msg->poses.size();i++) {
-        table_pos.first = tablepos_msg->poses[i].pose.position.x;
-        table_pos.second = tablepos_msg->poses[i].pose.position.y;
+        table_pos.first = tablepos_msg->poses[i].pose.position.x - global_map.origin_x;
+        table_pos.second = tablepos_msg->poses[i].pose.position.y - global_map.origin_y-15.0;
         global_map.table_seq.push_back(table_pos);
         ROS_INFO("Table_Pos: %f %f\n",table_pos.first,table_pos.second);
     }
@@ -276,7 +279,7 @@ void KinoReplanFSM::pubMapCallback(const ros::TimerEvent& e) {
     }
   }
 
-  global_map_pub_.publish(msg);
+  // global_map_pub_.publish(msg);
 }
 void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
   static int fsm_num = 0;
@@ -289,7 +292,7 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
   }
   
   // table_seq: notify fsm state
-  //publishExecState(exec_state_);
+  publishExecState(exec_state_);
   switch (exec_state_) {
     case INIT: {
       if (!have_odom_) {
@@ -299,6 +302,7 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
         return;
       }
       changeFSMExecState(WAIT_TARGET, "FSM");
+      // std::cout << "Not reaching endpoint bug LAIBON1" << std::endl;
       break;
     }
 
@@ -335,15 +339,17 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
       /* determine if need to replan */
       LocalTrajData* info     = &planner_manager_->local_data_;
       ros::Time      time_now = ros::Time::now();
-      double         t_cur    = (time_now - info->start_time_).toSec();
+      // double         t_cur    = (time_now - info->start_time_).toSec();
+      double         t_cur    = ((time_now - info->start_time_).toSec())*0.2;
       t_cur                   = min(info->duration_, t_cur);
 
       Eigen::Vector3d pos = info->position_traj_.evaluateDeBoorT(t_cur);
 
       /* && (end_pt_ - pos).norm() < 0.5 */
-      if (t_cur > info->duration_ - 1e-2) {
+      if (t_cur > (info->duration_ - 1e-2)) {
         have_target_ = false;
         changeFSMExecState(WAIT_TARGET, "FSM");
+        std::cout << "Not reaching endpoint bug LAIBON2" << std::endl;
         return;
 
       } else if ((end_pt_ - pos).norm() < no_replan_thresh_) {
@@ -363,7 +369,8 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
     case REPLAN_TRAJ: {
       LocalTrajData* info     = &planner_manager_->local_data_;
       ros::Time      time_now = ros::Time::now();
-      double         t_cur    = (time_now - info->start_time_).toSec();
+      // double         t_cur    = (time_now - info->start_time_).toSec();
+      double         t_cur    = ((time_now - info->start_time_).toSec())*0.2;
 
       start_pt_  = info->position_traj_.evaluateDeBoorT(t_cur);
       start_vel_ = info->velocity_traj_.evaluateDeBoorT(t_cur);
@@ -466,7 +473,7 @@ void KinoReplanFSM::checkCollisionCallback(const ros::TimerEvent& e) {
 }
 
 bool KinoReplanFSM::callKinodynamicReplan() {
-      // set z=0.0 plane
+      // laibon set z=0.0 plane
       start_pt_[2] = 0.0;
       start_vel_[2] = 0.0;
       start_acc_[2] = 0.0;
@@ -496,9 +503,6 @@ bool KinoReplanFSM::callKinodynamicReplan() {
       pt.x = pos_pts(i, 0);
       pt.y = pos_pts(i, 1);
       pt.z = pos_pts(i, 2);
-      // while(std::abs(pt.z) > 1e-1){
-      //   std::cout << "ptz: " << pt.z << std::endl;
-      // }
       bspline.pos_pts.push_back(pt);
     }
 

@@ -36,10 +36,10 @@ ros::Publisher cmd_vis_pub, pos_cmd_pub, traj_pub;
 nav_msgs::Odometry odom;
 
 quadrotor_msgs::PositionCommand cmd;
-// double pos_gain[3] = {5.7, 5.7, 6.2};
-// double vel_gain[3] = {3.4, 3.4, 4.0};
-double pos_gain[3] = { 5.7, 5.7, 6.2 };
-double vel_gain[3] = { 3.4, 3.4, 4.0 };
+double pos_gain[3] = {5.7, 5.7, 6.2};
+double vel_gain[3] = {3.4, 3.4, 4.0};
+// double pos_gain[3] = {2.7, 2.7, 0.0};
+// double vel_gain[3] = {8, 8, 0.0};
 
 using fast_planner::NonUniformBspline;
 
@@ -249,7 +249,8 @@ void cmdCallback(const ros::TimerEvent& e) {
   if (!receive_traj_) return;
 
   ros::Time time_now = ros::Time::now();
-  double t_cur = (time_now - start_time_).toSec();
+  // double t_cur = (time_now - start_time_).toSec();
+  double t_cur = ((time_now - start_time_).toSec())*0.2;
 
   Eigen::Vector3d pos, vel, acc, pos_f;
   double yaw, yawdot;

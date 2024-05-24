@@ -42,7 +42,7 @@ inline std::pair<float,float> GridMap::TablePosCalc(double mx, double my){
     std::pair<float,float> temp;
     temp.first = (mx-origin_x);
     temp.second = -(my-origin_y);
-    ROS_INFO("Shit:%f %f || ori:%f %f\n",temp.first,temp.second, origin_x,origin_y);
+    // ROS_INFO("Shit:%f %f || ori:%f %f\n",temp.first,temp.second, origin_x,origin_y);
     return temp;
 }
 
@@ -115,19 +115,19 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
     grid(0) = GENERIC_MAX(pos(0)-offset_(0), origin_x);
     grid(1) = GENERIC_MAX(pos(1)-offset_(1), origin_y);
     if(!posToIndex(grid,grid)){
-        ROS_INFO("You shit at min: %f %f\n",grid(0), grid(1));
+        // ROS_INFO("You shit at min: %f %f\n",grid(0), grid(1));
         return temp;
     }
-    ROS_INFO("You good at min: %f %f\n",grid(0), grid(1));
+    // ROS_INFO("You good at min: %f %f\n",grid(0), grid(1));
     int x = grid_idx;
 
     grid(0) = GENERIC_MIN(pos(0)+offset_(0),width*resolution);
     grid(1) = GENERIC_MIN(pos(1)+offset_(1),height*resolution);
     if(!posToIndex(grid,grid)){
-        ROS_INFO("You shit at max: %f %f\n",grid(0), grid(1));
+        // ROS_INFO("You shit at max: %f %f\n",grid(0), grid(1));
         return temp;
     }
-    ROS_INFO("You good at max: %f %f\n",grid(0), grid(1));
+    // ROS_INFO("You good at max: %f %f\n",grid(0), grid(1));
     static int add_zero = 0;
     if(obstacle_idx[0] != 0){
         obstacle_idx.insert (obstacle_idx.begin(), 0);
@@ -147,7 +147,7 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
                 l = m;
                 r = obstacle_idx.size()-1;
                 x = grid_idx;
-                std::cout <<"m:"<<m <<" You can find 1st idx\n";
+                // std::cout <<"m:"<<m <<" You can find 1st idx\n";
                 continue;
             }else{
                 end = obstacle_idx.begin()+m+((obstacle_idx[m] == x||(obstacle_idx[m]<x && x<obstacle_idx[m+1]))?1:0);
@@ -156,7 +156,7 @@ inline std::vector<int> GridMap::getObstclesIdx(Eigen::Vector3d pos, Eigen::Vect
                 }else{
                     temp.assign(start,end);
                 }
-                std::cout <<"m:"<<m <<" You can find 2nd idx\n";
+                // std::cout <<"m:"<<m <<" You can find 2nd idx\n";
                 if(add_zero&&temp[0]==0){
                     temp.erase(temp.begin()); 
                 }
