@@ -12,10 +12,10 @@ class Quadrotor
 public:
   struct State
   {
-    Eigen::Vector3d x;
-    Eigen::Vector3d v;
-    Eigen::Matrix3d R;
-    Eigen::Vector3d omega;
+    Eigen::Vector3d x;            // (x,y,z)
+    Eigen::Vector3d v;            // (vx,vy.vz)
+    Eigen::Matrix3d R;            // 3x3 Rotation Matrix
+    Eigen::Vector3d omega;        // roll, pitch, yaw velocity
     Eigen::Array4d  motor_rpm;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   };

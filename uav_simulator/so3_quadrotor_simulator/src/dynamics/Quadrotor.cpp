@@ -44,6 +44,7 @@ Quadrotor::Quadrotor(void)
   input_ = Eigen::Array4d::Zero();
 }
 
+// Process the quadrotor model
 void
 Quadrotor::step(double dt)
 {
@@ -81,7 +82,7 @@ Quadrotor::step(double dt)
   state_.motor_rpm(3) = internal_state_[21];
 
   // Re-orthonormalize R (polar decomposition)
-  Eigen::LLT<Eigen::Matrix3d> llt(state_.R.transpose() * state_.R);
+  Eigen::LLT<Eigen::Matrix3d> llt(state_.R.transpose() * state_.R);  // LLT -> Cholesky Decomposition
   Eigen::Matrix3d             P = llt.matrixL();
   Eigen::Matrix3d             R = state_.R * P.inverse();
   state_.R                      = R;
